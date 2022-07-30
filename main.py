@@ -4,6 +4,7 @@ import requests
 import os
 import json
 from pyDes import des, PAD_PKCS5, CBC
+import threading
 
 # 加解密工具
 
@@ -143,6 +144,29 @@ def getDownloadLink(fileName):
 def getMusicFileName(code, mid, format): return f'{code}{mid}.{format}'
 
 
+def parseSectionByNotFound(filename, songmid):
+    global mqq_
+    global mkey_
+    u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+    d = {"comm": {"ct": "19", "cv": "1777"}, "queryvkey": {"method": "CgiGetVkey", "module": "vkey.GetVkeyServer",                                 "param": {
+        "uin": mqq_,
+        "guid": "QMD50",
+        "referer": "y.qq.com",
+        "songtype": [1],
+        "filename": [filename], "songmid": [songmid]
+    }}}
+    d = json.dumps(d, ensure_ascii=False)
+    d = sess.post(u, d, headers={
+        'referer': 'https://y.qq.com/portal/profile.html',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
+        'cookie': f'qqmusic_key={mkey_};qqmusic_uin={mqq_};',
+        'content-type': 'application/json; charset=utf-8'
+    })
+    vkey = d.json()['queryvkey']['data']['midurlinfo'][0]['purl']
+    u = f'http://ws.stream.qqmusic.qq.com/{vkey}&fromtag=140'
+    return u
+
+
 mkey_ = ""
 mqq_ = ""
 
@@ -157,17 +181,25 @@ def downSingle(it):
         os.mkdir(f"{my_path}")
     localFile = os.path.join(my_path, f"{localFile}")
     if os.path.exists(localFile):
-        print(f"本地已下载,跳过下载 [{it['name']}.{it['extra']}].")
-        return True
+        if os.path.getsize(localFile) == int(it['size']):
+            print(f"本地已下载,跳过下载 [{it['album']} / {it['name']}.{it['extra']}].")
+            return True
+        else:
+            print(
+                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{it['name']}.{it['extra']}].")
 
     file = getMusicFileName(
         it['prefix'], it['mid'], it['extra'])
     log = f"{it['name']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
-    print('正在下载 - '+log)
+    print(f'正在下载 | {it["album"]} / {log}')
     link = getDownloadLink(file)
     if link.find('qqmusic.qq.com') == -1:
-        print(f"解析歌曲下载地址失败！{log}")
-        return False
+        if link.find('"title":"Not Found"') != -1:
+            # 开始第二次解析
+            link = parseSectionByNotFound(file, it['songmid'])
+        else:
+            print(f"解析歌曲下载地址失败！{log}")
+            return False
     f = sess.get(link)
     with open(localFile, 'wb') as code:
         code.write(f.content)
@@ -179,6 +211,7 @@ def _main(target="周杰伦"):
     global mkey_
     global mqq_
     global download_home
+    global dualThread
     print("==== welcome to QQMusic digit High Quality Music download center ====")
     my_path = download_home
     if not os.path.exists(my_path):
@@ -201,7 +234,6 @@ def _main(target="周杰伦"):
     while True:
         (list, meta) = searchMusic(target, page)
         if meta['next'] != -1:
-            print(f'获取列表成功,当前第{page}页,共搜索到{meta["size"]}条数据.')
             add = 1
             span = "  "
             songs = []
@@ -268,32 +300,61 @@ def _main(target="周杰伦"):
                     format = "m4a"
                     qStr = "低品质 96kbps"
                     fsize = int(id['size_96aac'])
+
+                albumName = str(i["album"]['title']).strip(" ")
+                if albumName == '':
+                    albumName = "未分类专辑"
                 songs.append({
                     'prefix': code,
                     'extra': format,
                     'notice': qStr,
                     'mid': mid,
+                    'songmid': i['mid'],
                     'size': fsize,
                     'name': f'{singer} - {i["title"]}',
-                    'album': i["album"]['title']
-                })
+                    'album': albumName})
+
+                time_publish = i["time_public"]
+                if time_publish == '':
+                    time_publish = "0000-00-00"
                 print(
-                    f'{add} {span}{i["time_public"]} {singer} - {i["title"]}')
+                    f'{add} {span}{time_publish} {singer} - {i["title"]}')
                 add += 1
             willDownAll = False
             while True:
-                print("\n下一页直接输入n回车即可\n请输入下载的歌曲序号:", end='')
+                print(
+                    f"\n获取列表成功.当前第{page}页,共{meta['size']}条搜索结果.\n下一页输入n\n上一页输入p\n一键下载本页所有歌曲输入a\n若要下载某一首,请输入歌曲前方的序号。\n请输入:", end='')
                 inputKey = input()
                 if inputKey == "n":
                     break
                 elif inputKey == 'a':
                     # 下载本页所有歌曲
                     willDownAll = True
+                elif inputKey == 'p':
+                    page -= 2
+                    if page + 1 < 1:
+                        page = 0
+                    break
                 if willDownAll:
+                    thList = []
                     for mp3 in songs:
-                        downSingle(mp3)
+                        th = threading.Thread(target=downSingle, args=(mp3,))
+                        thList.append(th)
+                        th.start()
+                        if len(thList) == dualThread:
+                            while len(thList) > 0:
+                                thList.pop().join()
+                        # downSingle(mp3)
+                    while len(thList) > 0:
+                        thList.pop().join()
+                    willDownAll = False
                 else:
-                    op = int(inputKey)
+                    op = -1
+                    try:
+                        op = int(inputKey)
+                    except:
+                        print("输入无效字符,请重新输入。")
+                        continue
                     it = songs[op-1]
                     downSingle(it)
                 print("下载完成!")
@@ -303,5 +364,11 @@ def _main(target="周杰伦"):
     print()
 
 
+# 下载的文件要保存到哪里
+# /Volumes/data类似于windows上的C:/
+# /music/就是你自定义的文件夹名称 随便指定 会自动创建
 download_home = "/Volumes/data/music/"
+
+# 多线程下载 线程数量
+dualThread = 8
 _main()
