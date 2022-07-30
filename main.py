@@ -90,7 +90,7 @@ def searchMusic(key="", page=1):
             'docid': i['docid'],
             'id': i['id'],
             'mid': i['mid'],
-            'name': i['name'],
+            'name': i['title'],
             'singer': i['singer'],
             'time_public': i['time_public'],
             'title': i['title'],
@@ -174,23 +174,23 @@ mqq_ = ""
 def downSingle(it):
     global download_home
     # prepare
-    localFile = f"{it['name']}.{it['extra']}"
-    my_path = download_home
+    localFile = f"{it['singer']} - {it['title']}.{it['extra']}"
+    my_path = download_home+it['singer']+'/'
     my_path = f"{my_path}{it['album']}"
     if not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
     localFile = os.path.join(my_path, f"{localFile}")
     if os.path.exists(localFile):
         if os.path.getsize(localFile) == int(it['size']):
-            print(f"本地已下载,跳过下载 [{it['album']} / {it['name']}.{it['extra']}].")
+            print(f"本地已下载,跳过下载 [{it['album']} / {localFile}].")
             return True
         else:
             print(
-                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{it['name']}.{it['extra']}].")
+                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{localFile}].")
 
     file = getMusicFileName(
         it['prefix'], it['mid'], it['extra'])
-    log = f"{it['name']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
+    log = f"{it['singer']} - {it['title']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
     print(f'正在下载 | {it["album"]} / {log}')
     link = getDownloadLink(file)
     if link.find('qqmusic.qq.com') == -1:
@@ -213,10 +213,9 @@ def _main(target="周杰伦"):
     global download_home
     global dualThread
     print("==== welcome to QQMusic digit High Quality Music download center ====")
-    my_path = download_home
+    my_path = download_home+target+'/'
     if not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
-
     cookie = getCookie()
 
     mkey, qq = decryptAndSetCookie(cookie)
@@ -311,7 +310,8 @@ def _main(target="周杰伦"):
                     'mid': mid,
                     'songmid': i['mid'],
                     'size': fsize,
-                    'name': f'{singer} - {i["title"]}',
+                    'title': f'{i["title"]}',
+                    'singer': f'{singer}',
                     'album': albumName})
 
                 time_publish = i["time_public"]
@@ -323,10 +323,15 @@ def _main(target="周杰伦"):
             willDownAll = False
             while True:
                 print(
-                    f"\n获取列表成功.当前第{page}页,共{meta['size']}条搜索结果.\n下一页输入n\n上一页输入p\n一键下载本页所有歌曲输入a\n若要下载某一首,请输入歌曲前方的序号。\n请输入:", end='')
+                    f"\n获取列表成功.当前第{page}页,共{meta['size']}条搜索结果.\n下一页输入n\n上一页输入p\n一键下载本页所有歌曲输入a\n若要下载某一首,请输入歌曲前方的序号。\n修改搜索关键词输入s\n请输入:", end='')
                 inputKey = input()
                 if inputKey == "n":
                     break
+                elif inputKey == "s":
+                    print('\033c', end='')
+                    print("请输入新的搜索关键词:", end='')
+                    _main(input())
+                    return
                 elif inputKey == 'a':
                     # 下载本页所有歌曲
                     willDownAll = True
@@ -370,5 +375,5 @@ def _main(target="周杰伦"):
 download_home = "/Volumes/data/music/"
 
 # 多线程下载 线程数量
-dualThread = 8
+dualThread = 16
 _main()
