@@ -55,7 +55,7 @@ def getHead():
 sess = requests.Session()
 
 
-def buildSearchContent(song: String = '', page=1, page_per_num=100):
+def buildSearchContent(song='', page=1, page_per_num=100):
     return {
         "comm": {"ct": "19", "cv": "1845"},
         "music.search.SearchCgiService": {
@@ -66,7 +66,7 @@ def buildSearchContent(song: String = '', page=1, page_per_num=100):
     }
 
 
-def searchMusic(key: String, page=1):
+def searchMusic(key="", page=1):
     # base url
     url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
     # base data content from qqmusic pc-client-apps
@@ -148,11 +148,10 @@ mqq_ = ""
 
 
 def downSingle(it):
+    global download_home
     # prepare
     localFile = f"{it['name']}.{it['extra']}"
-    my_path = os.path.abspath(
-        os.path.dirname(__file__)) + '/music/'
-    my_path = "/Volumes/data/music/"
+    my_path = download_home
     my_path = f"{my_path}{it['album']}"
     if not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
@@ -176,11 +175,12 @@ def downSingle(it):
     return True
 
 
-def _main():
+def _main(target="周杰伦"):
     global mkey_
     global mqq_
+    global download_home
     print("==== welcome to QQMusic digit High Quality Music download center ====")
-    my_path = os.path.abspath(os.path.dirname(__file__)) + '/music/'
+    my_path = download_home
     if not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
 
@@ -197,7 +197,6 @@ def _main():
     # filename = decryptText(filename, qq)
     # # 解密后 RS01 003w2xz20QlUZt . flac
 
-    target = "周杰伦"
     page = 1
     while True:
         (list, meta) = searchMusic(target, page)
@@ -304,4 +303,5 @@ def _main():
     print()
 
 
+download_home = "/Volumes/data/music/"
 _main()
