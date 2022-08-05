@@ -176,12 +176,17 @@ mqq_ = ""
 
 
 def downSingle(it):
-    global download_home
+    global download_home, onlyShowSingerSelfSongs
     # prepare
     localFile = f"{it['singer']} - {it['title']}.{it['extra']}".replace(
         "/", "\\")
     mShower = localFile
     my_path = download_home+it['singer']+'/'
+
+    if not onlyShowSingerSelfSongs:
+        if not os.path.exists(my_path):
+            os.mkdir(f"{my_path}")
+
     my_path = f"{my_path}{it['album']}"
     if not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
@@ -211,6 +216,100 @@ def downSingle(it):
         code.write(f.content)
         code.flush()
     return True
+
+
+def parseList(list, target):
+    add = 1
+    span = "  "
+    songs = []
+    lists = []
+    for i in list:
+        singer = i['singer'][0]['name']
+        # print(json.dumps(i['singer']))
+        if singer != target and onlyShowSingerSelfSongs:
+            # print(f"{singer} not is {target}")
+            continue
+        if add > 9:
+            span = " "
+        if add > 99:
+            span = ""
+
+        id = i["file"]
+        # 批量下载不需要选择音质 直接开始解析为最高音质 枚举
+        code = ""
+        format = ""
+        qStr = ""
+        fsize = 0
+        mid = id['media_mid']
+        if int(id['size_hires']) != 0:
+            # 高解析无损音质
+            code = "RS01"
+            format = "flac"
+            qStr = "高解析无损 Hi-Res"
+            fsize = int(id['size_hires'])
+        elif int(id['size_flac']) != 0:
+            isEnc = False  # 这句代码是逆向出来的 暂时无效
+            if(isEnc):
+                code = "F0M0"
+                format = "mflac"
+            else:
+                code = "F000"
+                format = "flac"
+            qStr = "无损品质 FLAC"
+            fsize = int(id['size_flac'])
+        elif int(id['size_320mp3']) != 0:
+            code = "M800"
+            format = "mp3"
+            qStr = "超高品质 320kbps"
+            fsize = int(id['size_320mp3'])
+        elif int(id['size_192ogg']) != 0:
+            isEnc = False  # 这句代码是逆向出来的 暂时无效
+            if(isEnc):
+                code = "O6M0"
+                format = "mgg"
+            else:
+                code = "O600"
+                format = "ogg"
+            qStr = "高品质 OGG"
+            fsize = int(id['size_192ogg'])
+        elif int(id['size_128mp3']) != 0:
+            isEnc = False  # 这句代码是逆向出来的 暂时无效
+            if(isEnc):
+                code = "O4M0"
+                format = "mgg"
+            else:
+                code = "M500"
+                format = "mp3"
+            qStr = "标准品质 128kbps"
+            fsize = int(id['size_128mp3'])
+        elif int(id['size_96aac']) != 0:
+            code = "C400"
+            format = "m4a"
+            qStr = "低品质 96kbps"
+            fsize = int(id['size_96aac'])
+
+        albumName = str(i["album"]['title']).strip(" ")
+        if albumName == '':
+            albumName = "未分类专辑"
+        songs.append({
+            'prefix': code,
+            'extra': format,
+            'notice': qStr,
+            'mid': mid,
+            'songmid': i['mid'],
+            'size': fsize,
+            'title': f'{i["title"]}',
+            'singer': f'{singer}',
+            'album': albumName})
+
+        time_publish = i["time_public"]
+        if time_publish == '':
+            time_publish = "0000-00-00"
+        lists.append(
+            f'{add} {span}{time_publish} {singer} - {i["title"]}')
+        add += 1
+    # 这部分其实可以只返回songs 但是代码我懒得改了 反正又不是不能用=v=
+    return lists, songs
 
 
 def _main(target="周杰伦"):
@@ -247,165 +346,78 @@ def _main(target="周杰伦"):
     page = 1
     while True:
         (list, meta) = searchMusic(target, page)
-        if meta['next'] != -1:
-            add = 1
-            span = "  "
-            songs = []
-            for i in list:
-                singer = i['singer'][0]['name']
-                if singer != target and onlyShowSingerSelfSongs:
-                    # print(f"{singer} not is {target}")
-                    continue
-                if add > 9:
-                    span = " "
-                if add > 99:
-                    span = ""
-
-                id = i["file"]
-                # 批量下载不需要选择音质 直接开始解析为最高音质 枚举
-                code = ""
-                format = ""
-                qStr = ""
-                fsize = 0
-                mid = id['media_mid']
-                if int(id['size_hires']) != 0:
-                    # 高解析无损音质
-                    code = "RS01"
-                    format = "flac"
-                    qStr = "高解析无损 Hi-Res"
-                    fsize = int(id['size_hires'])
-                elif int(id['size_flac']) != 0:
-                    isEnc = False  # 这句代码是逆向出来的 暂时无效
-                    if(isEnc):
-                        code = "F0M0"
-                        format = "mflac"
-                    else:
-                        code = "F000"
-                        format = "flac"
-                    qStr = "无损品质 FLAC"
-                    fsize = int(id['size_flac'])
-                elif int(id['size_320mp3']) != 0:
-                    code = "M800"
-                    format = "mp3"
-                    qStr = "超高品质 320kbps"
-                    fsize = int(id['size_320mp3'])
-                elif int(id['size_192ogg']) != 0:
-                    isEnc = False  # 这句代码是逆向出来的 暂时无效
-                    if(isEnc):
-                        code = "O6M0"
-                        format = "mgg"
-                    else:
-                        code = "O600"
-                        format = "ogg"
-                    qStr = "高品质 OGG"
-                    fsize = int(id['size_192ogg'])
-                elif int(id['size_128mp3']) != 0:
-                    isEnc = False  # 这句代码是逆向出来的 暂时无效
-                    if(isEnc):
-                        code = "O4M0"
-                        format = "mgg"
-                    else:
-                        code = "M500"
-                        format = "mp3"
-                    qStr = "标准品质 128kbps"
-                    fsize = int(id['size_128mp3'])
-                elif int(id['size_96aac']) != 0:
-                    code = "C400"
-                    format = "m4a"
-                    qStr = "低品质 96kbps"
-                    fsize = int(id['size_96aac'])
-
-                albumName = str(i["album"]['title']).strip(" ")
-                if albumName == '':
-                    albumName = "未分类专辑"
-                songs.append({
-                    'prefix': code,
-                    'extra': format,
-                    'notice': qStr,
-                    'mid': mid,
-                    'songmid': i['mid'],
-                    'size': fsize,
-                    'title': f'{i["title"]}',
-                    'singer': f'{singer}',
-                    'album': albumName})
-
-                time_publish = i["time_public"]
-                if time_publish == '':
-                    time_publish = "0000-00-00"
-                print(
-                    f'{add} {span}{time_publish} {singer} - {i["title"]}')
-                add += 1
-            willDownAll = False
-            while True:
-                print(f"""
-获取列表成功.当前第{page}页,共{meta['size']}条搜索果.
-n 切换下一页输入 (Next)
-p 切换上一页输入 (Previous)
-a 一键下载本页所有歌曲输入 (All)
+        list, songs = parseList(list, target)
+        for li in list:
+            print(li)
+        willDownAll = False
+        while True:
+            print(f"""
+获取列表成功.当前第{page}页,{'下一页仍有更多数据' if meta['next'] != -1 else '没有下一页数据了'}.共{meta['size']}条搜索结果.
+n 切换下一页 (Next)
+p 切换上一页 (Previous)
+a 一键下载本页所有歌曲 (All)
 1 若要下载某一首,请输入歌曲前方的序号.(如: 1) (Single)
-s 修改搜索关键词输入 (Search)
-(Thread)\t\t当前[{dualThread}]线程,修改并发输入 t
-(OnlyMatchSinger&Songer)\t仅显示搜索的歌手歌曲 [{ '已开启' if onlyShowSingerSelfSongs else '已关闭'}] 切换模式输入 o
-(Download Home)\t\t当前下载缓存的主目录为[{download_home}],如需切换输入 h
+s 修改搜索关键词 (Search)
+t 当前[{dualThread}]线程,修改并发. (Thread)
+o 切换模式:仅显示搜索的歌手歌曲 [{ '已开启' if onlyShowSingerSelfSongs else '已关闭'}]  (OnlyMatchSinger&Songer)
+h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
 
 请输入:
 """, end='')
-                inputKey = input()
-                if inputKey == "n":
-                    break
-                if inputKey == "o":
-                    onlyShowSingerSelfSongs = not onlyShowSingerSelfSongs
-                    saveConfigs()
-                    return _main(searchKey)
-                elif inputKey == "s" or inputKey == "h":
-                    print(
-                        f"请输入新的{'搜索关键词' if inputKey == 's' else '下载主目录'}:", end='')
-                    if inputKey == 'h':
-                        download_home = input()
-                    else:
-                        searchKey = input()
-                    saveConfigs()
-                    _main(searchKey)
-                    return
-                elif inputKey == 'a':
-                    # 下载本页所有歌曲
-                    willDownAll = True
-                elif inputKey == 't':
-                    print("请输入线程数:", end='')
-                    dualThread = int(input())
-                    saveConfigs()
-                    continue
-                elif inputKey == 'p':
-                    page -= 2
-                    if page + 1 < 1:
-                        page = 0
-                    break
-                if willDownAll:
-                    thList = []
-                    for mp3 in songs:
-                        th = threading.Thread(target=downSingle, args=(mp3,))
-                        thList.append(th)
-                        th.start()
-                        if len(thList) == dualThread:
-                            while len(thList) > 0:
-                                thList.pop().join()
-                        # downSingle(mp3)
-                    while len(thList) > 0:
-                        thList.pop().join()
-                    willDownAll = False
+            inputKey = input()
+            if inputKey == "n":
+                break
+            if inputKey == "o":
+                onlyShowSingerSelfSongs = not onlyShowSingerSelfSongs
+                saveConfigs()
+                return _main(searchKey)
+            elif inputKey == "s" or inputKey == "h":
+                print(
+                    f"请输入新的{'搜索关键词' if inputKey == 's' else '下载主目录'}:", end='')
+                if inputKey == 'h':
+                    download_home = input()
                 else:
-                    op = -1
-                    try:
-                        op = int(inputKey)
-                    except:
-                        print("输入无效字符,请重新输入。")
-                        continue
-                    it = songs[op-1]
-                    downSingle(it)
-                print("下载完成!")
-            page += 1
-        else:
-            break
+                    searchKey = input()
+                saveConfigs()
+                _main(searchKey)
+                return
+            elif inputKey == 'a':
+                # 下载本页所有歌曲
+                willDownAll = True
+            elif inputKey == 't':
+                print("请输入线程数:", end='')
+                dualThread = int(input())
+                saveConfigs()
+                continue
+            elif inputKey == 'p':
+                page -= 2
+                if page + 1 < 1:
+                    page = 0
+                break
+            if willDownAll:
+                thList = []
+                for mp3 in songs:
+                    th = threading.Thread(target=downSingle, args=(mp3,))
+                    thList.append(th)
+                    th.start()
+                    if len(thList) == dualThread:
+                        while len(thList) > 0:
+                            thList.pop().join()
+                    # downSingle(mp3)
+                while len(thList) > 0:
+                    thList.pop().join()
+                willDownAll = False
+            else:
+                op = -1
+                try:
+                    op = int(inputKey)
+                except:
+                    print("输入无效字符,请重新输入。")
+                    continue
+                it = songs[op-1]
+                downSingle(it)
+            print("下载完成!")
+        page += 1
     print()
 
 
