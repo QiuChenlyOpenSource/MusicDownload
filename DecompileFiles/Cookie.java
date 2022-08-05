@@ -1,3 +1,5 @@
+package DecompileFiles;
+
 public class Cookie {
     private static String Mkey;
     private static String QQ;

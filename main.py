@@ -56,6 +56,10 @@ def getHead():
 sess = requests.Session()
 
 
+def clear():
+    print('\033c', end='')
+
+
 def buildSearchContent(song='', page=1, page_per_num=100):
     return {
         "comm": {"ct": "19", "cv": "1845"},
@@ -174,7 +178,9 @@ mqq_ = ""
 def downSingle(it):
     global download_home
     # prepare
-    localFile = f"{it['singer']} - {it['title']}.{it['extra']}"
+    localFile = f"{it['singer']} - {it['title']}.{it['extra']}".replace(
+        "/", "\\")
+    mShower = localFile
     my_path = download_home+it['singer']+'/'
     my_path = f"{my_path}{it['album']}"
     if not os.path.exists(my_path):
@@ -182,11 +188,11 @@ def downSingle(it):
     localFile = os.path.join(my_path, f"{localFile}")
     if os.path.exists(localFile):
         if os.path.getsize(localFile) == int(it['size']):
-            print(f"本地已下载,跳过下载 [{it['album']} / {localFile}].")
+            print(f"本地已下载,跳过下载 [{it['album']} / {mShower}].")
             return True
         else:
             print(
-                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{localFile}].")
+                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{mShower}].")
 
     file = getMusicFileName(
         it['prefix'], it['mid'], it['extra'])
@@ -212,9 +218,18 @@ def _main(target="周杰伦"):
     global mqq_
     global download_home
     global dualThread
-    print("==== welcome to QQMusic digit High Quality Music download center ====")
-    my_path = download_home+target+'/'
-    if not os.path.exists(my_path):
+    global onlyShowSingerSelfSongs
+    global searchKey
+
+    clear()
+    print("==== Welcome to QQMusic Digit High Quality Music Download Center ====")
+    # fix create directory files error(if not exists)
+    if not os.path.exists(download_home):
+        os.mkdir(f"{download_home}")
+
+    # 当关闭仅搜索歌手模式的时候 此处代码不应执行
+    my_path = download_home+(target+'/' if onlyShowSingerSelfSongs else '')
+    if onlyShowSingerSelfSongs and not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
     cookie = getCookie()
 
@@ -238,7 +253,7 @@ def _main(target="周杰伦"):
             songs = []
             for i in list:
                 singer = i['singer'][0]['name']
-                if singer != target:
+                if singer != target and onlyShowSingerSelfSongs:
                     # print(f"{singer} not is {target}")
                     continue
                 if add > 9:
@@ -322,19 +337,44 @@ def _main(target="周杰伦"):
                 add += 1
             willDownAll = False
             while True:
-                print(
-                    f"\n获取列表成功.当前第{page}页,共{meta['size']}条搜索结果.\n下一页输入n\n上一页输入p\n一键下载本页所有歌曲输入a\n若要下载某一首,请输入歌曲前方的序号。\n修改搜索关键词输入s\n请输入:", end='')
+                print(f"""
+获取列表成功.当前第{page}页,共{meta['size']}条搜索果.
+n 切换下一页输入 (Next)
+p 切换上一页输入 (Previous)
+a 一键下载本页所有歌曲输入 (All)
+1 若要下载某一首,请输入歌曲前方的序号.(如: 1) (Single)
+s 修改搜索关键词输入 (Search)
+(Thread)\t\t当前[{dualThread}]线程,修改并发输入 t
+(OnlyMatchSinger&Songer)\t仅显示搜索的歌手歌曲 [{ '已开启' if onlyShowSingerSelfSongs else '已关闭'}] 切换模式输入 o
+(Download Home)\t\t当前下载缓存的主目录为[{download_home}],如需切换输入 h
+
+请输入:
+""", end='')
                 inputKey = input()
                 if inputKey == "n":
                     break
-                elif inputKey == "s":
-                    print('\033c', end='')
-                    print("请输入新的搜索关键词:", end='')
-                    _main(input())
+                if inputKey == "o":
+                    onlyShowSingerSelfSongs = not onlyShowSingerSelfSongs
+                    saveConfigs()
+                    return _main(searchKey)
+                elif inputKey == "s" or inputKey == "h":
+                    print(
+                        f"请输入新的{'搜索关键词' if inputKey == 's' else '下载主目录'}:", end='')
+                    if inputKey == 'h':
+                        download_home = input()
+                    else:
+                        searchKey = input()
+                    saveConfigs()
+                    _main(searchKey)
                     return
                 elif inputKey == 'a':
                     # 下载本页所有歌曲
                     willDownAll = True
+                elif inputKey == 't':
+                    print("请输入线程数:", end='')
+                    dualThread = int(input())
+                    saveConfigs()
+                    continue
                 elif inputKey == 'p':
                     page -= 2
                     if page + 1 < 1:
@@ -369,6 +409,18 @@ def _main(target="周杰伦"):
     print()
 
 
+def saveConfigs():
+    cfg = json.dumps({
+        'dualThread': dualThread,
+        'download_home': download_home,
+        'searchKey': searchKey,
+        'onlyShowSingerSelfSongs': onlyShowSingerSelfSongs
+    }, ensure_ascii=False).encode()
+    with open(cfgName, "wb") as cf:
+        cf.write(cfg)
+        cf.flush()
+
+
 # 下载的文件要保存到哪里
 # /Volumes/data类似于windows上的C:/
 # /music/就是你自定义的文件夹名称 随便指定 会自动创建
@@ -376,4 +428,27 @@ download_home = "/Volumes/data/music/"
 
 # 多线程下载 线程数量
 dualThread = 16
-_main()
+
+# 默认搜索Key
+searchKey = "周杰伦"
+
+# 搜索歌曲名称时是否强制指定歌手和搜索key一致，用于过滤非本歌手的歌曲，如果是false 则显示所有搜索结果 如果你只想搜索某个歌手则可以开启本选项 默认关闭
+# 如何理解本选项？ 搜索结果是按照[时间] [歌手] - [歌名]排序的，你搜索的关键词searchKey严格匹配[歌手]选项,不是你搜索的歌手的歌则会强制过滤显示，如果你需要切换显示模式则输入 o 即可显示搜索未过滤结果
+onlyShowSingerSelfSongs = False
+
+# 配置项名称
+cfgName = "config.json"
+
+# 初次使用即保存配置项
+if not os.path.exists(cfgName):
+    saveConfigs()
+
+# read default config
+with open(cfgName) as cfg:
+    list = cfg.read()
+    params = json.loads(list)
+    download_home = params['download_home']
+    onlyShowSingerSelfSongs = bool(params['onlyShowSingerSelfSongs'])
+    searchKey = params['searchKey']
+    dualThread = int(params['dualThread'])
+_main(searchKey)

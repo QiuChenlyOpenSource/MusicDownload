@@ -1,3 +1,5 @@
+package DecompileFiles;
+
 class main {
     public static void main(String[] args) {
         EncryptAndDecrypt.decryptAndSetCookie(EncryptAndDecrypt.TestCookie);
