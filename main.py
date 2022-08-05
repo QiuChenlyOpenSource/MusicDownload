@@ -148,27 +148,42 @@ def getDownloadLink(fileName):
 def getMusicFileName(code, mid, format): return f'{code}{mid}.{format}'
 
 
-def parseSectionByNotFound(filename, songmid):
+def getQQServersCallback(url, method=0, data={}):
     global mqq_
     global mkey_
-    u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
-    d = {"comm": {"ct": "19", "cv": "1777"}, "queryvkey": {"method": "CgiGetVkey", "module": "vkey.GetVkeyServer",                                 "param": {
+    d = json.dumps(data, ensure_ascii=False)
+    h = {
+        'referer': 'https://y.qq.com/portal/profile.html',
+        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
+        'cookie': f'qqmusic_key={mkey_};qqmusic_uin={mqq_};',
+        'content-type': 'application/json; charset=utf-8'
+    }
+    if method == 0:
+        d = sess.get(url, headers=h)
+    else:
+        d = sess.post(url, d, headers=h)
+    return d
+
+
+def getMediaLyric(mid):
+    d = getQQServersCallback(
+        f'https://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?songmid={mid}&g_tk=5381')
+    d = d.text  # MusicJsonCallback(...)
+    d = d[18:-1]
+    return json.loads(d)
+
+
+def parseSectionByNotFound(filename, songmid):
+    d = getQQServersCallback('https://u.y.qq.com/cgi-bin/musicu.fcg', 1, {"comm": {"ct": "19", "cv": "1777"}, "queryvkey": {"method": "CgiGetVkey", "module": "vkey.GetVkeyServer",                                 "param": {
         "uin": mqq_,
         "guid": "QMD50",
         "referer": "y.qq.com",
         "songtype": [1],
         "filename": [filename], "songmid": [songmid]
-    }}}
-    d = json.dumps(d, ensure_ascii=False)
-    d = sess.post(u, d, headers={
-        'referer': 'https://y.qq.com/portal/profile.html',
-        'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36',
-        'cookie': f'qqmusic_key={mkey_};qqmusic_uin={mqq_};',
-        'content-type': 'application/json; charset=utf-8'
-    })
-    vkey = d.json()['queryvkey']['data']['midurlinfo'][0]['purl']
-    u = f'http://ws.stream.qqmusic.qq.com/{vkey}&fromtag=140'
-    return u
+    }}})
+    d = d.json()
+    vkey = d['queryvkey']['data']['midurlinfo'][0]['purl']
+    return vkey
 
 
 mkey_ = ""
@@ -177,28 +192,7 @@ mqq_ = ""
 
 def downSingle(it):
     global download_home, onlyShowSingerSelfSongs
-    # prepare
-    localFile = f"{it['singer']} - {it['title']}.{it['extra']}".replace(
-        "/", "\\")
-    mShower = localFile
-    my_path = download_home+it['singer']+'/'
-
-    if not onlyShowSingerSelfSongs:
-        if not os.path.exists(my_path):
-            os.mkdir(f"{my_path}")
-
-    my_path = f"{my_path}{it['album']}"
-    if not os.path.exists(my_path):
-        os.mkdir(f"{my_path}")
-    localFile = os.path.join(my_path, f"{localFile}")
-    if os.path.exists(localFile):
-        if os.path.getsize(localFile) == int(it['size']):
-            print(f"本地已下载,跳过下载 [{it['album']} / {mShower}].")
-            return True
-        else:
-            print(
-                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{mShower}].")
-
+    songmid = it['songmid']
     file = getMusicFileName(
         it['prefix'], it['mid'], it['extra'])
     log = f"{it['singer']} - {it['title']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
@@ -207,14 +201,64 @@ def downSingle(it):
     if link.find('qqmusic.qq.com') == -1:
         if link.find('"title":"Not Found"') != -1:
             # 开始第二次解析
-            link = parseSectionByNotFound(file, it['songmid'])
+            vkey = parseSectionByNotFound(file, songmid)
+            if vkey == '':
+                print(f"找不到资源文件! 解析歌曲下载地址失败！{log}")
+                return False
+            link = f'http://ws.stream.qqmusic.qq.com/{vkey}&fromtag=140'
         else:
-            print(f"解析歌曲下载地址失败！{log}")
+            print(f"无法加载资源文件！解析歌曲下载地址失败！{log}")
             return False
+
+    # prepare
+    localFile = f"{it['singer']} - {it['title']}.{it['extra']}".replace(
+        "/", "\\")
+    localLrcFile = f"{it['singer']} - {it['title']}.lrc".replace(
+        "/", "\\")
+    mShower = localFile
+    my_path = download_home+it['singer']+'/'
+
+    if not onlyShowSingerSelfSongs:
+        if not os.path.exists(my_path):
+            os.mkdir(f"{my_path}")
+    my_path = f"{my_path}{it['album']}"
+    if not os.path.exists(my_path):
+        os.mkdir(f"{my_path}")
+    localFile = os.path.join(my_path, f"{localFile}")
+    localLrcFile = os.path.join(my_path, f"{localLrcFile}")
+
+    # 下载歌词
+    if not os.path.exists(localLrcFile):
+        print(f"本地歌词文件不存在,准备自动下载: {localLrcFile}.")
+        lyric = getMediaLyric(songmid)  # lyric trans
+        if int(lyric['retcode']) == 0:
+            # "retcode": 0,
+            # "code": 0,
+            # "subcode": 0,
+
+            # {'retcode': -1901, 'code': -1901, 'subcode': -1901}
+            # 外语歌曲有翻译 但是👴不需要！
+            lyric = base64.b64decode(lyric['lyric'])
+            with open(localLrcFile, 'wb') as code:
+                code.write(lyric)
+                code.flush()
+        else:
+            print(f"歌词获取失败!服务器上搜索不到此首 [{it['singer']} - {it['title']}] 歌曲歌词!")
+
+    # 下载歌曲
+    if os.path.exists(localFile):
+        if os.path.getsize(localFile) == int(it['size']):
+            print(f"本地已下载,跳过下载 [{it['album']} / {mShower}].")
+            return True
+        else:
+            print(
+                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{mShower}].")
+
     f = sess.get(link)
     with open(localFile, 'wb') as code:
         code.write(f.content)
         code.flush()
+
     return True
 
 
@@ -418,7 +462,6 @@ h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
                 downSingle(it)
             print("下载完成!")
         page += 1
-    print()
 
 
 def saveConfigs():
