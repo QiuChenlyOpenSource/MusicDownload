@@ -148,7 +148,9 @@ def getDownloadLink(fileName):
 def getMusicFileName(code, mid, format): return f'{code}{mid}.{format}'
 
 
-def getQQServersCallback(url, method=0, data={}):
+def getQQServersCallback(url, method=0, data=None):
+    if data is None:
+        data = {}
     global mqq_
     global mkey_
     d = json.dumps(data, ensure_ascii=False)
@@ -471,7 +473,7 @@ def saveConfigs():
         'searchKey': searchKey,
         'onlyShowSingerSelfSongs': onlyShowSingerSelfSongs
     }, ensure_ascii=False).encode()
-    with open(cfgName, "wb") as cf:
+    with open(cfgName, "wb", encoding="utf-8") as cf:
         cf.write(cfg)
         cf.flush()
 
@@ -499,7 +501,7 @@ if not os.path.exists(cfgName):
     saveConfigs()
 
 # read default config
-with open(cfgName) as cfg:
+with open(cfgName, encoding="utf8") as cfg:
     list = cfg.read()
     params = json.loads(list)
     download_home = params['download_home']
