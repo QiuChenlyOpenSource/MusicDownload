@@ -499,7 +499,7 @@ if not os.path.exists(cfgName):
     saveConfigs()
 
 # read default config
-with open(cfgName) as cfg:
+with open(cfgName, encoding='utf-8') as cfg:
     list = cfg.read()
     params = json.loads(list)
     download_home = params['download_home']
