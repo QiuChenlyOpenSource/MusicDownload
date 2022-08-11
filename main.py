@@ -194,10 +194,7 @@ mqq_ = ""
 def downSingle(it):
     global download_home, onlyShowSingerSelfSongs
     songmid = it['songmid']
-    file = getMusicFileName(
-        it['prefix'], it['mid'], it['extra'])
-    log = f"{it['singer']} - {it['title']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
-    print(f'正在下载 | {it["album"]} / {log}')
+    file = getMusicFileName(it['prefix'], it['mid'], it['extra'])
     link = getDownloadLink(file)
     if link.find('qqmusic.qq.com') == -1:
         if link.find('"title":"Not Found"') != -1:
@@ -254,7 +251,8 @@ def downSingle(it):
         else:
             print(
                 f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{mShower}].")
-
+    log = f"{it['singer']} - {it['title']} [{it['notice']}] {round(int(it['size'])/1024/1024,2)}MB - {file}"
+    print(f'正在下载 | {it["album"]} / {log}')
     f = sess.get(link)
     with open(localFile, 'wb') as code:
         code.write(f.content)
@@ -421,6 +419,8 @@ h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
                     f"请输入新的{'搜索关键词' if inputKey == 's' else '下载主目录'}:", end='')
                 if inputKey == 'h':
                     download_home = input()
+                    if not download_home.endswith('/'):
+                        download_home += '/'
                 else:
                     searchKey = input()
                 saveConfigs()
@@ -498,8 +498,8 @@ cfgName = "config.json"
 # 初次使用即保存配置项
 if not os.path.exists(cfgName):
     system = sys.platform
-    if system == 'win32':  # 尝试兼容windows系统
-        download_home = os.getcwd() + '/music/'  # 自动定位到执行目录，兼容Windows默认配置。
+    # if system == 'win32':  # 尝试兼容windows系统
+    download_home = os.getcwd() + '/music/'  # 自动定位到执行目录，兼容Windows默认配置。
     saveConfigs()
 
 # read default config
@@ -511,4 +511,4 @@ with open(cfgName, encoding='utf-8') as cfg:
     searchKey = params['searchKey']
     dualThread = int(params['dualThread'])
 
-_main()
+_main(searchKey)
