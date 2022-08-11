@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import base64
+import sys
 import requests
 import os
 import json
@@ -496,6 +497,9 @@ cfgName = "config.json"
 
 # 初次使用即保存配置项
 if not os.path.exists(cfgName):
+    system = sys.platform
+    if system == 'win32':  # 尝试兼容windows系统
+        download_home = os.getcwd() + '/music/'  # 自动定位到执行目录，兼容Windows默认配置。
     saveConfigs()
 
 # read default config
@@ -506,4 +510,5 @@ with open(cfgName, encoding='utf-8') as cfg:
     onlyShowSingerSelfSongs = bool(params['onlyShowSingerSelfSongs'])
     searchKey = params['searchKey']
     dualThread = int(params['dualThread'])
-_main(searchKey)
+
+_main()
