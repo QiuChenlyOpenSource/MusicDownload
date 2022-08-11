@@ -189,10 +189,11 @@ def parseSectionByNotFound(filename, songmid):
 
 mkey_ = ""
 mqq_ = ""
+threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
 def downSingle(it):
-    global download_home, onlyShowSingerSelfSongs
+    global download_home, onlyShowSingerSelfSongs, musicAlbumsClassification
     songmid = it['songmid']
     file = getMusicFileName(it['prefix'], it['mid'], it['extra'])
     link = getDownloadLink(file)
@@ -219,15 +220,22 @@ def downSingle(it):
     if not onlyShowSingerSelfSongs:
         if not os.path.exists(my_path):
             os.mkdir(f"{my_path}")
-    my_path = f"{my_path}{it['album']}"
-    if not os.path.exists(my_path):
-        os.mkdir(f"{my_path}")
+
+    threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
+    my_path = f"{my_path}{it['album'] if musicAlbumsClassification else ''}"
+
+    try:
+        if not os.path.exists(my_path):
+            os.mkdir(f"{my_path}")
+    except:
+        pass
+    threadLock.release()
     localFile = os.path.join(my_path, f"{localFile}")
     localLrcFile = os.path.join(my_path, f"{localLrcFile}")
 
     # 下载歌词
     if not os.path.exists(localLrcFile):
-        print(f"本地歌词文件不存在,准备自动下载: {localLrcFile}.")
+        print(f"本地歌词文件不存在,准备自动下载: [{localLrcFile}].")
         lyric = getMediaLyric(songmid)  # lyric trans
         if int(lyric['retcode']) == 0:
             # "retcode": 0,
@@ -355,58 +363,51 @@ def parseList(list, target):
     return lists, songs
 
 
-def _main(target="周杰伦"):
-    global mkey_
-    global mqq_
-    global download_home
-    global dualThread
-    global onlyShowSingerSelfSongs
-    global searchKey
+def _main(target=""):
+    global mkey_, mqq_, download_home, dualThread, searchKey, onlyShowSingerSelfSongs, musicAlbumsClassification
 
-    clear()
-    print("==== Welcome to QQMusic Digit High Quality Music Download Center ====")
     # fix create directory files error(if not exists)
     if not os.path.exists(download_home):
         os.mkdir(f"{download_home}")
 
     # 当关闭仅搜索歌手模式的时候 此处代码不应执行
-    my_path = download_home+(target+'/' if onlyShowSingerSelfSongs else '')
+    my_path = f'{download_home}{target + "/" if onlyShowSingerSelfSongs else ""}'
     if onlyShowSingerSelfSongs and not os.path.exists(my_path):
         os.mkdir(f"{my_path}")
-    cookie = getCookie()
-
-    mkey, qq = decryptAndSetCookie(cookie)
-    mkey_ = mkey
-    mqq_ = qq
+    mkey_, mqq_ = decryptAndSetCookie(getCookie())
 
     # 根据文件名获取下载链接
     # getDownloadLink("RS01003w2xz20QlUZt.flac")
 
     # filename = "ID9TZr-ensC/-rJ2t6-atFsm+sRG+2S6CqS"
     # filename = decryptText(filename, qq)
-    # # 解密后 RS01 003w2xz20QlUZt . flac
-
+    # 解密后 RS01 003w2xz20QlUZt . flac
     page = 1
     while True:
         (list, meta) = searchMusic(target, page)
         list, songs = parseList(list, target)
-        for li in list:
-            print(li)
-        willDownAll = False
         while True:
+            clear()
+            print(
+                "==== Welcome to QQMusic Digit High Quality Music Download Center ====\n")
+            for li in list:
+                print(li)
+            willDownAll = False
             print(f"""
-获取列表成功.当前第{page}页,{'下一页仍有更多数据' if meta['next'] != -1 else '没有下一页数据了'}.共{meta['size']}条搜索结果.
+==== 获取列表成功.共{meta['size']}条搜索结果,当前第{page}页,{'下一页仍有更多数据' if meta['next'] != -1 else '下一页没有数据了'}. ====
+
 n 切换下一页 (Next)
 p 切换上一页 (Previous)
 a 一键下载本页所有歌曲 (All)
-1 若要下载某一首,请输入歌曲前方的序号.(如: 1) (Single)
-s 修改搜索关键词 (Search)
-t 当前[{dualThread}]线程,修改并发. (Thread)
-o 切换模式:仅显示搜索的歌手歌曲 [{ '已开启' if onlyShowSingerSelfSongs else '已关闭'}]  (OnlyMatchSinger&Songer)
-h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
+1 <如: 1> 若要下载某一首,请输入歌曲前方的序号 (Single)
+s [{ searchKey      }] 修改搜索关键词 (Search)
+t [{ dualThread     }] 修改当前线程并发. (Thread)
+h 修改当前下载缓存的主目录 [{ download_home  }] (Download Home)
+o [{ '已开启' if onlyShowSingerSelfSongs   else '已关闭' }] 切换模式:仅显示搜索的歌手歌曲 (OnlyMatchSinger&Songer)
+c [{ '已开启' if musicAlbumsClassification else '已关闭' }] 切换模式:按照专辑名称分文件夹归档音乐歌曲文件 (Music Albums Classification)
 
-请输入:
-""", end='')
+==== 请在下方输入指令 ====
+>""", end='')
             inputKey = input()
             if inputKey == "n":
                 break
@@ -434,6 +435,10 @@ h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
                 dualThread = int(input())
                 saveConfigs()
                 continue
+            elif inputKey == 'c':
+                musicAlbumsClassification = not musicAlbumsClassification
+                saveConfigs()
+                continue
             elif inputKey == 'p':
                 page -= 2
                 if page + 1 < 1:
@@ -448,7 +453,6 @@ h 切换当前下载缓存的主目录.[{download_home}] (Download Home)
                     if len(thList) == dualThread:
                         while len(thList) > 0:
                             thList.pop().join()
-                    # downSingle(mp3)
                 while len(thList) > 0:
                     thList.pop().join()
                 willDownAll = False
@@ -470,7 +474,8 @@ def saveConfigs():
         'dualThread': dualThread,
         'download_home': download_home,
         'searchKey': searchKey,
-        'onlyShowSingerSelfSongs': onlyShowSingerSelfSongs
+        'onlyShowSingerSelfSongs': onlyShowSingerSelfSongs,
+        'musicAlbumsClassification': musicAlbumsClassification
     }, ensure_ascii=False).encode()
     with open(cfgName, "wb") as cf:
         cf.write(cfg)
@@ -492,6 +497,11 @@ searchKey = "周杰伦"
 # 如何理解本选项？ 搜索结果是按照[时间] [歌手] - [歌名]排序的，你搜索的关键词searchKey严格匹配[歌手]选项,不是你搜索的歌手的歌则会强制过滤显示，如果你需要切换显示模式则输入 o 即可显示搜索未过滤结果
 onlyShowSingerSelfSongs = False
 
+
+# 音乐文件自动归档到单独的专辑文件夹中,如果关闭那么就不会生成专辑目录,默认自动按照专辑名称分类归档音乐文件
+musicAlbumsClassification = True
+
+
 # 配置项名称
 cfgName = "config.json"
 
@@ -510,5 +520,6 @@ with open(cfgName, encoding='utf-8') as cfg:
     onlyShowSingerSelfSongs = bool(params['onlyShowSingerSelfSongs'])
     searchKey = params['searchKey']
     dualThread = int(params['dualThread'])
+    musicAlbumsClassification = params['musicAlbumsClassification']
 
 _main(searchKey)
