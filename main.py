@@ -363,6 +363,16 @@ def parseList(list, target):
     return lists, songs
 
 
+def downAll(target, size):
+    num = math.ceil(size/100)
+    result = []
+    for i in range(1, num + 1):
+        (list, meta) = searchMusic(target, i)
+        list, songs = parseList(list, target)
+        result.extend(songs)
+    return result
+
+
 def _main(target=""):
     global mkey_, mqq_, download_home, dualThread, searchKey, onlyShowSingerSelfSongs, musicAlbumsClassification
 
@@ -398,6 +408,7 @@ def _main(target=""):
 
 n 切换下一页 (Next)
 p 切换上一页 (Previous)
+l 一键下载所有歌曲 (All)
 a 一键下载本页所有歌曲 (All)
 1 <如: 1> 若要下载某一首,请输入歌曲前方的序号 (Single)
 s [{ searchKey      }] 修改搜索关键词 (Search)
@@ -429,6 +440,9 @@ c [{ '已开启' if musicAlbumsClassification else '已关闭' }] 切换模式:�
                 return
             elif inputKey == 'a':
                 # 下载本页所有歌曲
+                willDownAll = True
+            elif inputKey == 'l':
+                songs = downAll(target, meta['size'])
                 willDownAll = True
             elif inputKey == 't':
                 print("请输入线程数:", end='')
