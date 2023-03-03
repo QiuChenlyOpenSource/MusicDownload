@@ -1,0 +1,9 @@
+/NetEase.cfg
+/config.json
+/music
+.DS_Store
+venv
+/login.png
+.idea/*
+!.idea/runConfigurations
+.vscode
