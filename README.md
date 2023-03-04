@@ -18,8 +18,6 @@
 2. 有绿钻 Cookie 后依然可以正常批量下载
 3. 昨天又逆向了一个共享App，现在可以批量下载了。
 
-# 使用方法
-
 ## 新功能 同步网易云我的喜欢歌单并从qq曲库下载精准匹配无损歌曲下载
 
 ### 实现原理
@@ -63,17 +61,17 @@ pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 终端/控制台 进入到本文件所在的目录 执行以下指令:
 
 ```bash
-python3 -m venv ./venv # 生成虚拟化环境
-source ./venv/bin/activate # 激活虚拟化环境
-#如果你不使用虚拟环境可以跳过执行上面的代码
 pip3 install -r requirements.txt # 安装必须包
-python3 main.py
+python3 MainServer.py
 ```
 
-【Windows 用户注意】
+然后google chrome之类的浏览器打开http://127.0.0.1:8899即可打开新世界
 
-FileNotFoundError 是因为代码没有处理判断 Windows 操作系统的路径处理，我这里的主机是 macOS 系统，请拉取最新的代码以修复此问题。
+### 新特性: 基于web的友好界面出来啦
 
+![img.png](img.png)
+主页设置线程池数量和下载地址目录，搜索页搜索音乐下载。
+暂时比较粗糙，刚搞完前后端联调
 ---
 
 # 说明书

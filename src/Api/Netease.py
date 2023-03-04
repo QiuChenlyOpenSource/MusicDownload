@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-02 07:38:37
-#  @上次修改    : 2023/3/2 下午7:38
+#  @修改时间    : 2023-03-04 10:45:08
+#  @上次修改    : 2023/3/4 上午10:44
 import base64
 import json
 import os
@@ -99,22 +99,24 @@ class Netease(BaseApi):
         b64 = res['qrimg']
         url = res['qrurl']
 
-        img = base64.b64decode(b64.split(",")[1])
-        with open("./login.png", "wb+") as p:
-            p.write(img)
-            p.flush()
+        return b64
 
-        img = cv2.imread("./login.png")
-        cv2.imshow("", img)
-        cv2.waitKey(0)
-
-        res = self.checkQrState(unikey)
-        res = res.json()['code']
-        if res == 803:
-            # Login Success
-            return True
-        print("登录失败。")
-        return False
+        # img = base64.b64decode(b64.split(",")[1])
+        # with open("./login.png", "wb+") as p:
+        #     p.write(img)
+        #     p.flush()
+        #
+        # img = cv2.imread("./login.png")
+        # cv2.imshow("", img)
+        # cv2.waitKey(0)
+        #
+        # res = self.checkQrState(unikey)
+        # res = res.json()['code']
+        # if res == 803:
+        #     # Login Success
+        #     return True
+        # print("登录失败。")
+        # return False
 
     def save_local(self, reinit=False):
         """

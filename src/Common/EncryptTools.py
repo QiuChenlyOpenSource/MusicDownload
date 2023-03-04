@@ -2,19 +2,17 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - EncryptTools.py
-#  @修改时间    : 2023-03-02 05:44:01
-#  @上次修改    : 2023/3/2 下午5:44
+#  @修改时间    : 2023-03-04 09:36:12
+#  @上次修改    : 2023/3/4 下午9:36
 import json
 import random
 import zlib
 from hashlib import md5
 from Crypto.Cipher import AES
-from pyDes import des, PAD_PKCS5, CBC
 import base64
 import time as tm
 
 from src.Common import Http
-from src.Common.Tools import QQHttpServer
 
 
 # des解密
@@ -123,7 +121,11 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     url = "http://app.kzti.top:1030/client/cgi-bin/api.fcg", "http://119.91.134.171:1030/client/cgi-bin/api.fcg"
     url = url[1]
     res = mHttp.getHttp(url, 1, s8)
-    res = zlib.decompress(res.content).decode("utf-8")
+    try:
+        res = zlib.decompress(res.content).decode("utf-8")
+    except:
+        print("下载失败，无法获取原始文件链接。")
+        return ""
     res = json.loads(res)
     # print(res['data'])
     return res['data']

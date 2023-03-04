@@ -3,23 +3,15 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - main.py
-#  @修改时间    : 2023-03-02 07:39:34
-#  @上次修改    : 2023/3/2 下午7:39
-import base64
-import concurrent
+#  @修改时间    : 2023-03-04 09:44:23
+#  @上次修改    : 2023/3/4 下午9:44
 import json
 import math
 import os
 import threading
 from time import sleep
 
-import requests
-
 from src.Api.Netease import Netease
-from src.Api.QQMusic import getQQMusicSearch, getQQMusicFileName, getQQMusicLyricByMacApp, \
-    getQQMusicDownloadLinkByTrdServer, getQQMusicMatchSong, formatList
-
-threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 parseThreadSize = 1
 """
@@ -35,102 +27,6 @@ parseThreadSize = 1
 def clear():
     # print('\033c', end='')
     pass
-
-
-def downSingle(it):
-    global download_home, onlyShowSingerSelfSongs, musicAlbumsClassification
-    songmid = it['songmid']
-    file = getQQMusicFileName(it['prefix'], it['mid'], it['extra'])
-    musicFileInfo = f"{it['singer']} - {it['title']} [{it['notice']}] {round(int(it['size']) / 1024 / 1024, 2)}MB - {file}"
-    musicid = it['musicid']
-    # link = getQQMusicDownloadLinkByMacApp(file, songmid)
-    # link = getQQMusicDownloadLinkV1(file, songmid)  # 早期方法 可食用
-    # vkey = link['purl']
-    # link = f'http://ws.stream.qqmusic.qq.com/{vkey}&fromtag=140'
-    # if vkey == '':
-    #     print(f"找不到资源文件! 解析歌曲下载地址失败！{musicFileInfo}")
-    #     return False
-
-    # 自动匹配歌曲类型
-    sourceSelect = "hr" if it['prefix'] == "RS01" else "sq" if it['prefix'] == "F000" else \
-        "hq" if it['prefix'] == "M800" else "mp3"
-
-    link = getQQMusicDownloadLinkByTrdServer(songmid, sourceSelect)
-
-    # 测试歌词下载保存接口代码
-    # lyric = getQQMusicMediaLyric(songmid) # 早期方法 已弃用
-    # lyric = getQQMusicLyricByMacApp(musicid)
-    # lyric = getQQMusicLyricByWeb(musicid)
-    # lyrics = base64.b64decode(lyric['lyric'])
-    # with open("lyric.txt", 'wb') as code:
-    #     code.write(lyrics)
-    #     code.flush()
-    # 测试歌词下载代码结束
-
-    if link.find('stream.qqmusic.qq.com') == -1:
-        print(f"无法加载资源文件！解析歌曲下载地址失败！{musicFileInfo}")
-        return False
-
-    # prepare
-    localFile = f"{it['singer']} - {it['title']}.{it['extra']}".replace(
-        "/", "\\")
-    localLrcFile = f"{it['singer']} - {it['title']}.lrc".replace(
-        "/", "\\")
-    mShower = localFile
-    my_path = download_home + it['singer'] + '/'
-
-    if not onlyShowSingerSelfSongs:
-        if not os.path.exists(my_path):
-            os.mkdir(f"{my_path}")
-
-    threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
-    my_path = f"{my_path}{it['album'] if musicAlbumsClassification else ''}"
-
-    try:
-        if not os.path.exists(my_path):
-            os.mkdir(f"{my_path}")
-    except:
-        pass
-    threadLock.release()
-    localFile = os.path.join(my_path, f"{localFile}")
-    localLrcFile = os.path.join(my_path, f"{localLrcFile}")
-
-    # 下载歌词
-    if not os.path.exists(localLrcFile):
-        print(f"本地歌词文件不存在,准备自动下载: [{localLrcFile}].")
-        # lyric = getQQMusicMediaLyric(songmid)  # lyric trans
-        lyric = getQQMusicLyricByMacApp(musicid)
-        if lyric['lyric'] != '':
-            # "retcode": 0,
-            # "code": 0,
-            # "subcode": 0,
-            # {'retcode': -1901, 'code': -1901, 'subcode': -1901}
-            # 外语歌曲有翻译 但是👴不需要！
-            lyric = base64.b64decode(lyric['lyric'])
-            try:
-                with open(localLrcFile, 'wb+') as code:
-                    code.write(lyric)
-                    code.flush()
-            except:
-                print("歌词获取出错了！")
-        else:
-            print(f"歌词获取失败!服务器上搜索不到此首 [{it['singer']} - {it['title']}] 歌曲歌词!")
-
-    # 下载歌曲
-    if os.path.exists(localFile):
-        if os.path.getsize(localFile) == int(it['size']):
-            print(f"本地已下载,跳过下载 [{it['album']} / {mShower}].")
-            return True
-        else:
-            print(
-                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(it['size'])},开始覆盖下载 [{mShower}].")
-    print(f'正在下载 | {it["album"]} / {musicFileInfo}')
-    f = requests.get(link)
-    with open(localFile, 'wb') as code:
-        code.write(f.content)
-        code.flush()
-
-    return True
 
 
 def fixWindowsFileName2Normal(texts=''):
@@ -237,9 +133,12 @@ def matchToDownload():
     # pollCache = []  # 协程任务缓存池
     for neteaseMusic in netes_love:
         try:
-            pre = download_home + neteaseMusic['author_simple'] + '/' + neteaseMusic['album']['name'] + "/"
+            pre = download_home + \
+                  neteaseMusic['author_simple'] + '/' + \
+                  neteaseMusic['album']['name'] + "/"
             if os.path.exists(pre) and len(os.listdir(pre)) > 0:
-                print(neteaseMusic['author_simple'] + ' - ' + neteaseMusic['album']['name'] + " 已下载，跳过。")
+                print(neteaseMusic['author_simple'] + ' - ' +
+                      neteaseMusic['album']['name'] + " 已下载，跳过。")
                 continue
             match = getQQMusicMatchSong(neteaseMusic)
             # pollCache.append(mConcurrentPool.submit(getQQMusicMatchSong, neteaseMusic))
@@ -289,7 +188,8 @@ def _main(target=""):
             span = '  '
 
             clear()
-            print("==== Welcome to Digit High Quality Music Download Center $$ Creative By QiuChenly ====\n")
+            print("==== Welcome to Digit High Quality Music Download Center ====\n")
+            print("==== \t\tCreative By QiuChenly\t\t ====")
 
             if add > 9:
                 span = " "
@@ -300,18 +200,17 @@ def _main(target=""):
                 add += 1
             willDownAll = False
             print(f"""
-==== 获取列表成功.共{meta['size']}条搜索结果,当前第{page}页,{'下一页仍有更多数据' if meta['next'] != -1 else '下一页没有数据了'}. ====
-
-n 切换下一页 (Next)
-l 一键下载所有页面歌曲 (All)
-s [{searchKey}] 修改搜索关键词 (Search)
+==== 获取列表成功.共{meta['size']}条搜索结果,当前第{page}页,{f'第{meta["next"]}页仍有更多数据' if meta['next'] != -1 else '下一页没有数据了'}. ====
 p 切换上一页 (Previous)
+n 切换下一页 (Next)
 a 一键下载本页所有歌曲 (All)
-t [{dualThread}] 修改当前线程并发. (ThreadPool)
+l 一键下载所有页面歌曲 (All)
 1 <输入1/2/3> 若要下载某一首,请输入歌曲前的序号 (Single)
+s [{searchKey}] 修改搜索关键词 (Search)
+t [{dualThread}] 修改当前线程并发数 (ThreadPool)
 h 修改当前下载缓存的主目录 [{download_home}] (Download Home)
 o [{'已开启' if onlyShowSingerSelfSongs else '已关闭'}] 切换模式:仅显示搜索的歌手歌曲 (OnlyMatchSinger&Songer)
-i [{'已开启' if ignoreNoAlbumMusic else '已关闭'}] 切换模式:屏蔽未分类专辑歌曲 (IgnoreNoAlbumSong)
+i [{'已开启' if ignoreNoAlbumMusic else '已关闭'}] 切换模式:屏蔽无所属专辑歌曲 (IgnoreNoAlbumSong)
 c [{'已开启' if musicAlbumsClassification else '已关闭'}] 切换模式:按照专辑名称分文件夹归档音乐歌曲文件 (Music Albums Classification)
 m [{'已可用' if len(netes_love) > 0 else '不可用'}] 根据已登录的网易云账号歌单进行批量匹配下载 当前获取到了歌单中全部[{len(netes_love)}首歌曲]
 
@@ -480,7 +379,8 @@ with open(cfgName, encoding='utf-8') as cfg:
     cfgLst = cfg.read()
     params: dict = json.loads(cfgLst)
     download_home = params['download_home']
-    onlyShowSingerSelfSongs = bool(params.get('onlyShowSingerSelfSongs', False))
+    onlyShowSingerSelfSongs = bool(
+        params.get('onlyShowSingerSelfSongs', False))
     searchKey = params.get('searchKey', "周杰伦")
     dualThread = int(params.get('dualThread', 5))
     musicAlbumsClassification = params.get('musicAlbumsClassification', True)
@@ -554,6 +454,5 @@ def checkUseForUpdateNetEase(noAsk=False):
         netes_love = songs
         saveConfigs()
 
-
 # checkUseForUpdateNetEase()
-_main(searchKey)
+# _main(searchKey)
