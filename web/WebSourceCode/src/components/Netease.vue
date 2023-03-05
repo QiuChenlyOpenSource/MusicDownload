@@ -122,7 +122,11 @@ const page_change = (v: number) => {
 }
 
 const handleDown = (music: NeteasePlayListSongsList) => {
-
+  Api.postDownload(music, {
+    onlyMatchSearchKey: basicStore.config.onlyMatchSearchKey,
+    ignoreNoAlbumSongs: basicStore.config.ignoreNoAlbumSongs,
+    classificationMusicFile: basicStore.config.classificationMusicFile
+  }, 'wyy')
 }
 </script>
 

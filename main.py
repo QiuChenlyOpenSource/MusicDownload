@@ -3,8 +3,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - main.py
-#  @修改时间    : 2023-03-04 09:44:23
-#  @上次修改    : 2023/3/4 下午9:44
+#  @修改时间    : 2023-03-05 11:20:18
+#  @上次修改    : 2023/3/5 下午11:20
 import json
 import math
 import os
@@ -27,36 +27,6 @@ parseThreadSize = 1
 def clear():
     # print('\033c', end='')
     pass
-
-
-def fixWindowsFileName2Normal(texts=''):
-    """
-    修正windows的符号问题
-    “?”、“、”、“╲”、“/”、“*”、““”、“”“、“<”、“>”、“|” " " ":"
-
-    参数:
-        texts (str, optional): 通常类型字符串. 默认值为 ''.
-
-    返回值:
-        str: 替换字符后的结果
-    """
-    targetChars = {
-        '|': ',',
-        '/': ' - ',
-        '╲': ' - ',
-        '、': '·',
-        '“': '"',
-        '”': '"',
-        '*': 'x',
-        '?': '？',  # fix for sample: Justin Bieber - What do you mean ? (Remix)
-        '<': '《',
-        '>': '》',
-        ' ': '',
-    }
-    for suffix in targetChars:
-        fix = targetChars[suffix]
-        texts = texts.replace(suffix, fix)
-    return texts
 
 
 def downAll(target, size):

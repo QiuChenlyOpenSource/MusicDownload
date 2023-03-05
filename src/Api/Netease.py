@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-05 06:55:31
-#  @上次修改    : 2023/3/5 下午6:55
+#  @修改时间    : 2023-03-05 11:50:33
+#  @上次修改    : 2023/3/5 下午11:50
 import base64
 import json
 import os
@@ -22,7 +22,13 @@ class Netease(BaseApi):
         self.__httpServer = Http.HttpRequest()
 
     def http(self, url, method=0, data={}):
-        return self.__httpServer.getHttp2Json(self.__baseUrl + url, method, data)
+        return self.httpwj(self.__baseUrl + url, method, data)
+
+    def httpwj(self, url, method=0, data={}):
+        return self.__httpServer.getHttp2Json(url, method, data)
+
+    def httpw(self, url, method=0, data=b'', head={}):
+        return self.__httpServer.getHttp(url, method, data, header=head)
 
     def search(self, searchKey: str) -> list[Songs]:
         pass
@@ -190,3 +196,18 @@ class Netease(BaseApi):
                 isLogin = self.getUserDetail()['code'] == 200
                 return isLogin
         return False
+
+    def getMusicUrl(self, id=''):
+        u = 'http://music.fy6b.com/index/mp3orflac'
+        d = f'type=netease&id={id}&option=flac'
+        # {
+        # 	"url": "http:\/\/m704.music.126.net\/20230305234939\/ccfe8832df4e3431dbe25dfea1118f1e\/jdymusic\/obj\/wo3DlMOGwrbDjj7DisKw\/22975550396\/2dbf\/d87f\/e6f2\/11dac549d861ba74f1d599d2f4f45cea.flac?authSecret=00000186b25ff97815c80aaba23719fb",
+        # 	"size": 3278433,
+        # 	"br": 512.575
+        # }
+        r = self.httpw(u, 1, d.encode('utf-8'), {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 8.1.0; MI 5s Build/OPM1.171019.018)"
+        })
+        r = r.json()
+        return r

@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-05 11:12:08
-#  @上次修改    : 2023/3/5 下午11:12
+#  @修改时间    : 2023-03-05 11:56:04
+#  @上次修改    : 2023/3/5 下午11:56
 import base64
 import os
 import threading
@@ -35,12 +35,51 @@ def subString(text: str, left: str, right: str):
 threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
+def fixWindowsFileName2Normal(texts=''):
+    """
+    修正windows的符号问题
+    “?”、“、”、“╲”、“/”、“*”、““”、“”“、“<”、“>”、“|” " " ":"
+
+    参数:
+        texts (str, optional): 通常类型字符串. 默认值为 ''.
+
+    返回值:
+        str: 替换字符后的结果
+    """
+    targetChars = {
+        '|': ',',
+        '/': ' - ',
+        '╲': ' - ',
+        '、': '·',
+        '“': '"',
+        '”': '"',
+        '*': 'x',
+        '?': '？',  # fix for sample: Justin Bieber - What do you mean ? (Remix)
+        '<': '《',
+        '>': '》',
+        ' ': '',
+    }
+    for suffix in targetChars:
+        fix = targetChars[suffix]
+        texts = texts.replace(suffix, fix)
+    return texts
+
+
 def handleKuwo(mid):
     from web.API.kw import kw
     url = kw.getDownloadUrlV2(mid)
     if url == 'failed':
         return None
     return url.json()['url']
+
+
+def handleWyy(mid):
+    from web.API.es import netes
+    url = netes.getMusicUrl(mid)
+    print("解析网易云歌曲下载接口:", url)
+    if url['br'] == -1:
+        return None
+    return url['url']
 
 
 def handleQQ(music, musicFileInfo):
@@ -86,6 +125,14 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
     elif platform == 'kw':
         link = handleKuwo(music['mid'])
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
+    elif platform == 'wyy':
+        link: str = handleWyy(music['id'])
+        if link is not None:
+            music['extra'] = 'flac' if link.find(".flac?") != -1 else 'mp3'
+        music['singer'] = music['author_simple']
+        music['title'] = music['name']
+        music["album"] = music['album']['name']
+        musicFileInfo = f"{music['author_simple']} - {music['name']}"
     else:
         link = None
         musicFileInfo = ''
@@ -113,6 +160,11 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         "/", "\\")
     mShower = localFile
     my_path = download_home + music['singer'] + '/'
+
+    # 特殊字符处理
+    music["title"] = fixWindowsFileName2Normal(f'{music["title"]}')
+    music["singer"] = fixWindowsFileName2Normal(f'{music["singer"]}')
+    music["album"] = fixWindowsFileName2Normal(f'{music["album"]}')
 
     if not onlyShowSingerSelfSongs:
         if not os.path.exists(my_path):
