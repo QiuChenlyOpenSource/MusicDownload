@@ -2,11 +2,13 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-04 10:45:08
-#  @上次修改    : 2023/3/4 上午10:44
+#  @修改时间    : 2023-03-05 06:55:31
+#  @上次修改    : 2023/3/5 下午6:55
 import base64
 import json
 import os
+import time
+
 import cv2
 from src.Api.BaseApi import BaseApi
 from src.Common import Http
@@ -17,7 +19,6 @@ class Netease(BaseApi):
     __baseUrl = 'http://cloud-music.pl-fe.cn'
 
     def __init__(self):
-        self.__userInfo = None
         self.__httpServer = Http.HttpRequest()
 
     def http(self, url, method=0, data={}):
@@ -33,30 +34,42 @@ class Netease(BaseApi):
     def set_cookie(self, ck: dict):
         self.__httpServer.setCookie(ck)
 
-    def checkQrState(self, key: str):
-        u = '/login/qr/check?key=' + key
-        return self.http(u)
+    def checkQrState(self, unikey: str):
+        u = '/login/qr/check?key=' + unikey + f"&time={time.time_ns()}"
+        log = self.http(u).json()
+        log['cookie'] = self.cookie()
+        print(u, log)
+        return log
 
     def getUserDetail(self):
         u = '/user/account'
-        if self.__userInfo is not None and self.__userInfo['code'] == 200:
-            return self.__userInfo
-        self.__userInfo = self.http(u).json()
-        return self.__userInfo
+        return self.http(u).json()
 
-    __likeList = []
+    def getUserLikeList(self, uid: str):
+        """
+        传入用户 id, 可获取已喜欢音乐 id 列表(id 数组) 不是必须
+        Args:
+            uid:
 
-    def getUserLikeList(self):
-        u = f'/likelist?uid={self.__userInfo["account"]["id"]}'
+        Returns:
+
+        """
+        u = f'/likelist?uid={uid}'
         res = self.http(u).json()
-        self.__likeList = res['ids']
-        return self.__likeList
+        return res['ids']
 
     userPlaylist = []
 
-    def getUserPlaylist(self):
-        global userPlaylist
-        u = f'/user/playlist?uid={self.__userInfo["account"]["id"]}'
+    def getUserPlaylist(self, uid: str):
+        """
+        获取用户的收藏或创建的歌单
+        Args:
+            uid:
+
+        Returns:
+
+        """
+        u = f'/user/playlist?uid={uid}'
         res = self.http(u).json()
         userPlaylist = [
             {
@@ -71,13 +84,25 @@ class Netease(BaseApi):
         return userPlaylist
 
     def getPlayListAllMusic(self, playId, size=1000, offset=0):
+        """
+        获取歌单里所有音乐
+        Args:
+            playId:
+            size:
+            offset:
+
+        Returns:
+
+        """
         u = f'/playlist/track/all?id={playId}&limit={size}&offset={offset}'
         res = self.http(u)
         if res.status_code != 200:
-            return None
+            return []
         if res.text.find(":400}") != -1:
-            return None
+            return []
         js = res.json()
+        if js['code'] == 20001:
+            return -1
         return [
             {
                 "name": li['name'],
@@ -89,18 +114,33 @@ class Netease(BaseApi):
             } for li in js['songs']
         ]
 
-    def qrLogin(self):
-        u = '/login/qr/key'
+    def anonimousLogin(self):
+        u = "/register/anonimous" + f"?time={time.time_ns()}"
         res = self.http(u)
-        unikey = res.json()['data']['unikey']
+        res = res.json()
+        return res
 
-        u = '/login/qr/create?key=' + unikey + "&qrimg=1"
+    def getUserLevel(self):
+        u = "/user/level" + f"?time={time.time_ns()}"
+        res = self.http(u)
+        res = res.json()
+        return res
+
+    def qrLogin(self):
+        u = '/login/qr/key?' + f"time={time.time_ns()}"
+        res = self.http(u)
+        uniKey = res.json()['data']['unikey']
+        print("uniKey", uniKey)
+
+        u = '/login/qr/create?key=' + uniKey + "&qrimg=1"
         res = self.http(u).json()['data']
         b64 = res['qrimg']
         url = res['qrurl']
-
-        return b64
-
+        return {
+            'url': url,
+            'b64': b64,
+            'uniKey': uniKey
+        }
         # img = base64.b64decode(b64.split(",")[1])
         # with open("./login.png", "wb+") as p:
         #     p.write(img)

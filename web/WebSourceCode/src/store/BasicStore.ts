@@ -1,4 +1,5 @@
 import {defineStore} from "pinia";
+import {NetEaseUserInfo} from "@/utils/type/UserInfoDetail";
 
 export const BasicStore = defineStore("basicStore", {
     state: () => {
@@ -15,6 +16,12 @@ export const BasicStore = defineStore("basicStore", {
                     num: 16,
                     downloadFolder: ""
                 }
+            },
+            netease: {
+                isLogin: false,
+                token: "",
+                anonimousCookie: "",
+                user: {} as NetEaseUserInfo
             }
         };
     },

@@ -51,6 +51,7 @@ html {
     --qiuchen-text: rgba(185, 185, 185, 0.5);
     --qiuchen-hover-text: rgba(0, 0, 0, 0.35);
     --qiuchen-normal-white: rgba(0, 0, 0, 0);
+    --qiuchen-normal-black: rgba(0, 0, 0, 1);
 
 }
 
@@ -59,4 +60,5 @@ html.dark {
     --qiuchen-text: rgba(215, 215, 215, 0.5);
     --qiuchen-hover-text: rgb(255, 255, 255, .8);
     --qiuchen-normal-white: rgba(255, 255, 255, .5);
+    --qiuchen-normal-black: rgba(255, 255, 255, 1);
 }

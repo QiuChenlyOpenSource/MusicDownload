@@ -9,22 +9,24 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    copy: typeof import('./src/components/Index copy.vue')['default']
+    Download: typeof import('./src/components/Download.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
-    'Home copy': typeof import('./src/components/Home copy.vue')['default']
     ICarbonCloudDataOps: typeof import('~icons/carbon/cloud-data-ops')['default']
     ICarbonDownload: typeof import('~icons/carbon/download')['default']
     ICarbonMoon: typeof import('~icons/carbon/moon')['default']
     ICarbonSun: typeof import('~icons/carbon/sun')['default']
     IIconParkTwotoneClearFormat: typeof import('~icons/icon-park-twotone/clear-format')['default']
     Index: typeof import('./src/components/Index.vue')['default']
-    'Index copy': typeof import('./src/components/Index copy.vue')['default']
     ISystemUiconsSearch: typeof import('~icons/system-uicons/search')['default']
     ISystemUiconsSun: typeof import('~icons/system-uicons/sun')['default']
     ISystemUiconsUndoHistory: typeof import('~icons/system-uicons/undo-history')['default']
+    Netease: typeof import('./src/components/Netease.vue')['default']
     NotFound: typeof import('./src/components/NotFound.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchMusic: typeof import('./src/components/SearchMusic.vue')['default']
+    SimpleCode: typeof import('./src/components/SimpleCode.vue')['default']
   }
 }

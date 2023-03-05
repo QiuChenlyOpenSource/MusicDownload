@@ -13,6 +13,7 @@
     "axios": "^1.3.4",
     "crypto-js": "^4.1.1",
     "element-plus": "^2.2.33",
+    "qrcode.vue": "^3.3.3",
     "vue": "^3.2.47"
   },
   "devDependencies": {

@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - App.py
-#  @修改时间    : 2023-03-05 01:42:58
-#  @上次修改    : 2023/3/5 下午1:42
+#  @修改时间    : 2023-03-05 01:48:03
+#  @上次修改    : 2023/3/5 下午1:48
 import time
 from concurrent.futures import Future
 
@@ -73,11 +73,29 @@ c.initPool(16)
 
 
 def done(ret: Future):
+    """
+    得到下载返回结果
+    Args:
+        ret:
+
+    Returns:
+
+    """
+    excepts = ret.exception()
     ret = ret.result()
-    print(f"download over {ret}")
+    print(f"download over {ret},except = {excepts}")
 
 
 def executeFn(a1: str, a2: bool):
+    """
+    测试线程池函数 实际上没有被调用
+    Args:
+        a1:
+        a2:
+
+    Returns:
+
+    """
     time.sleep(4)
     return a1 + "a2 True" if a2 else "a2 False"
 

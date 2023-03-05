@@ -2,10 +2,11 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Http.py
-#  @修改时间    : 2023-03-02 05:40:50
-#  @上次修改    : 2023/3/2 下午5:40
+#  @修改时间    : 2023-03-05 04:04:02
+#  @上次修改    : 2023/3/5 下午4:04
 
 import json
+from http.cookiejar import Cookie
 
 import requests
 

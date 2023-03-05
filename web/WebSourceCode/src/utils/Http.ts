@@ -1,6 +1,9 @@
 import {MD5} from "crypto-js";
 import axios, {AxiosHeaders, AxiosRequestHeaders, AxiosResponse} from "axios";
-import {SearchMusicResult, SearchMusicResultSingle} from "@/utils/type/BasicType";
+import {InitAnonimous, SearchMusicResult, SearchMusicResultSingle} from "@/utils/type/BasicType";
+import {NetEaseUserInfo} from "@/utils/type/UserInfoDetail";
+import {MusicPlaylist} from "@/utils/type/NeteaseMusicPlayList";
+import {NeteasePlayListSongs} from "@/utils/type/NetEasePlayListSong";
 
 const userStore = () => {
     return {
@@ -82,70 +85,8 @@ export const Api = {
             code: Number;
         }>("/status");
     },
-
     async searchMusic(key: string, page: number) {
         return this.get<SearchMusicResult>("/qq/search/" + key + "/" + page);
-    },
-
-    async esQRCode() {
-        let u = "/qq/search";
-        return this.get<{
-            code: Number;
-            qrcode: string;
-        }>(u);
-    },
-
-    uploadExams(uri: string) {
-        return this.get<{
-            code: number;
-        }>("/exams/upExams/" + uri);
-    },
-    queryMineExams() {
-        return this.get<{
-            code: number;
-            message: string;
-            list: Array<String>;
-        }>("/exams/query");
-    },
-    checkLogin() {
-        return this.get<{
-            code: number;
-            message: string;
-        }>("/user/checkUseful");
-    },
-    login(user: string, password: string) {
-        let pwd = MD5(password).toString();
-        return this.get<{
-            message: string | undefined;
-            token: string;
-            code: number;
-        }>("/user/login/" + user + "/" + pwd);
-    },
-    getImage(src: string) {
-        return config.baseURL + `/getImage/${src}/${userStore().token}`;
-    },
-    getUserInfo() {
-        return this.get<String>("/user/info");
-    },
-    removeExams(id: string) {
-        return this.get<{
-            message: string;
-            code: number;
-            data: Object;
-        }>("/exams/cancelExams/" + id);
-    },
-    registerUser(info: { phoneNum: string; password: string }) {
-        return this.post<{
-            message: string;
-            code: number;
-            user: {
-                nickName: string;
-                sharedUid: number;
-                userAvatar: string;
-                userId: number;
-                userPoints: number;
-            };
-        }>("/user/register", info);
     },
     postDownload(data: SearchMusicResultSingle, config: object) {
         return this.post("/download", {
@@ -158,5 +99,32 @@ export const Api = {
     },
     getBaseConfig() {
         return this.get<{ folder: string; num: number }>("/getConfig")
-    }
+    },
+    getNeteaseQRCode() {
+        return this.get<{
+            code: Number;
+            qrcode: {
+                'url': string,
+                'b64': string,
+                'uniKey': string
+            };
+        }>("/es/qrLogin")
+    },
+    checkESState: (unikey: string) => Api.get<{
+        code: number,
+        cookie: string
+    }>("/es/checkLoginState/" + unikey),
+    getNetEaseUserInfo: () => Api.get<NetEaseUserInfo>("/es/getUserInfo"),
+    /**
+     * 把本地保存的cookie设置进去 防止二次登录
+     * @param data
+     */
+    setESCookie: (data: {
+        cookie: string
+    }) => Api.post<{
+        code: number
+    }>("/es/setCookie", data),
+    initAnonimous: () => Api.get<InitAnonimous>("/es/initAnonimous"),
+    getUserPlaylist: (userid: string) => Api.get<MusicPlaylist>("/es/getUserPlaylist/" + userid),
+    getMusicListByPlaylistID: (playListID: string, page: number, size: number) => Api.get<NeteasePlayListSongs>(`/es/getMusicListByPlaylistID/${playListID}/${page}/${size}`)
 };

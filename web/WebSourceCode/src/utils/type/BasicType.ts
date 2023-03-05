@@ -25,3 +25,11 @@ export interface Page {
     searchKey: string
     size: number
 }
+
+
+export interface InitAnonimous {
+    code: number
+    cookie: string
+    createTime: number
+    userId: number
+}

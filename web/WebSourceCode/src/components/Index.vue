@@ -24,30 +24,17 @@
 
     <div class="right-content">
       <router-view></router-view>
-
-      <!-- <el-button @click="esLogin">获取二维码</el-button>
-      <el-image
-        style="width: 100px; height: 100px"
-        :src="loginCode"
-        fit="cover"
-      /> -->
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
-import {useRoute, useRouter} from "vue-router";
-import {ref2, SystemStore} from "@/store/SystemStore";
-import {Api} from "@/utils/Http";
+import {useRouter} from "vue-router";
+import {SystemStore} from "@/store/SystemStore";
 
 const {basicStore} = SystemStore();
-const bStore = ref2(basicStore); //写入basicStore数据后这里自动刷新 可以绑定到界面上
-
-const loginCode = ref("");
-
 // 路由传参
-const route = useRoute();
 const router = useRouter();
 onMounted(() => {
   if (basicStore.firstOpen) {
@@ -57,17 +44,6 @@ onMounted(() => {
     }, 2000);
   }
 });
-
-const esLogin = () => {
-  Api.esQRCode().then((r) => {
-    loginCode.value = r.qrcode;
-  });
-};
-
-const music_page = () => {
-  //二级路由自动识别
-  router.push("/search");
-};
 </script>
 
 <style lang="scss" scoped>
