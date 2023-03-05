@@ -9,9 +9,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
-    copy: typeof import('./src/components/Index copy.vue')['default']
     Download: typeof import('./src/components/Download.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
     ICarbonCloudDataOps: typeof import('~icons/carbon/cloud-data-ops')['default']
     ICarbonDownload: typeof import('~icons/carbon/download')['default']
