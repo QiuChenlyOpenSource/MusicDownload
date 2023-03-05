@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - qq.py
-#  @修改时间    : 2023-03-04 08:44:12
-#  @上次修改    : 2023/3/4 下午8:44
+#  @修改时间    : 2023-03-05 01:43:55
+#  @上次修改    : 2023/3/5 下午1:43
 from flask import request
 
 from src.Api.QQMusic import QQMusicApi
@@ -22,3 +22,7 @@ def search(searchKey: str, page=1):
         'list': lst,
         'page': page
     }
+
+
+def init():
+    pass

@@ -2,15 +2,13 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - App.py
-#  @修改时间    : 2023-03-04 09:26:31
-#  @上次修改    : 2023/3/4 下午9:26
-import concurrent
+#  @修改时间    : 2023-03-05 01:42:58
+#  @上次修改    : 2023/3/5 下午1:42
 import time
 from concurrent.futures import Future
 
-from flask import Flask, Response, request
+from flask import Flask, request
 from flask_cors import CORS
-from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from src.Common.Concurrency import Downloader
 
@@ -72,7 +70,6 @@ def add():
 
 c = Downloader()
 c.initPool(16)
-from web.API.qq import QQApi
 
 
 def done(ret: Future):

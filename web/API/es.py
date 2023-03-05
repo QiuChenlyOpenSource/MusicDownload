@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - es.py
-#  @修改时间    : 2023-03-04 10:48:39
-#  @上次修改    : 2023/3/4 上午10:48
+#  @修改时间    : 2023-03-05 01:43:46
+#  @上次修改    : 2023/3/5 下午1:43
 from src.Api.Netease import Netease
 from web.App import app
 
@@ -17,3 +17,7 @@ def loginCode():
         'code': 200,
         'qrcode': qrcode
     }
+
+
+def init():
+    pass
