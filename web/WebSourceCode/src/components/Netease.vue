@@ -120,6 +120,10 @@ const page_change = (v: number) => {
   page.value = v
   UserFunction.fetchPlayListMusic(selectPlaylist.value)
 }
+
+const handleDown = (music: NeteasePlayListSongsList) => {
+
+}
 </script>
 
 <template>
