@@ -8,8 +8,9 @@ import {
   SearchMusicResultSingle,
 } from "@/utils/type/BasicType";
 import {DividerProps} from "element-plus";
+import {isType} from "@/utils/Utils";
 
-const platform = ref("QQ音乐");
+const platform = ref("kw");
 const {basicStore} = SystemStore();
 const refbasicStore = ref2(basicStore);
 const music_current_page = ref(1);
@@ -21,6 +22,11 @@ watch(refbasicStore.lastSearch, (now, old) => {
     music_current_page.value = 1;
   }
 });
+
+watch(platform, () => {
+  searchCache.value = undefined;
+  music_current_page.value = 1;
+})
 
 function page_change() {
   search();
@@ -39,13 +45,15 @@ const getMusicSinger = (music: SearchMusicResultSingle) => music.singer;
  */
 const filterList = (singleMusic: SearchMusicResultSingle) => {
   if (basicStore.config.ignoreNoAlbumSongs) {
-    return singleMusic.album !== "未分类专辑";
+    return singleMusic.album !== "未分类专辑" && singleMusic.album !== "";
   }
   if (basicStore.config.onlyMatchSearchKey) {
-    return getMusicSinger(singleMusic).indexOf(basicStore.lastSearch) !== -1;
+    let artist = getMusicSinger(singleMusic)
+    return artist.indexOf(basicStore.lastSearch) !== -1;
   }
   return true;
 };
+
 
 const search = () => {
   if (
@@ -54,7 +62,7 @@ const search = () => {
       ) === undefined
   )
     basicStore.searchHistory.push(basicStore.lastSearch);
-  Api.searchMusic(basicStore.lastSearch, music_current_page.value).then((r) => {
+  Api.searchMusic(basicStore.lastSearch, music_current_page.value, platform.value).then((r) => {
     let lst = [] as Array<SearchMusicResultSingle>;
     r.list.forEach((v) => {
       if (filterList(v)) lst.push(v);
@@ -83,10 +91,12 @@ onMounted(() => {
 const handleDown = (data: SearchMusicResultSingle) => {
   console.log(data)
   Api.postDownload(data, {
-    onlyMatchSearchKey: basicStore.config.onlyMatchSearchKey,
-    ignoreNoAlbumSongs: basicStore.config.ignoreNoAlbumSongs,
-    classificationMusicFile: basicStore.config.classificationMusicFile
-  })
+        onlyMatchSearchKey: basicStore.config.onlyMatchSearchKey,
+        ignoreNoAlbumSongs: basicStore.config.ignoreNoAlbumSongs,
+        classificationMusicFile: basicStore.config.classificationMusicFile
+      },
+      platform.value
+  )
 }
 </script>
 
@@ -105,9 +115,9 @@ const handleDown = (data: SearchMusicResultSingle) => {
               placeholder="请选择接口"
               style="width: 120px"
           >
-            <el-option label="QQ音乐" value="1"/>
-            <el-option label="网易云音乐" value="2"/>
-            <el-option label="酷我音乐" value="3"/>
+            <el-option label="QQ音乐" value="qq"/>
+            <!--            <el-option label="网易云音乐" value="wyy"/>-->
+            <el-option label="酷我音乐" value="kw"/>
           </el-select>
         </template>
         <template #append>
@@ -122,6 +132,10 @@ const handleDown = (data: SearchMusicResultSingle) => {
         <el-checkbox
             v-model="basicStore.config.ignoreNoAlbumSongs"
             label="屏蔽无所属专辑歌曲"
+        />
+        <el-checkbox
+            v-model="basicStore.config.classificationMusicFile"
+            label="下载歌曲按专辑分类"
         />
         <!--        <el-checkbox v-model="classificationMusicFile" label="按照专辑名称分文件夹归档音乐歌曲文件"/>-->
         <!--        <el-checkbox v-model="checked3" label="Option 1"/>-->
@@ -236,7 +250,7 @@ const handleDown = (data: SearchMusicResultSingle) => {
             class="tab-split"
             :page-size="30"
             layout="prev, pager, next"
-            :total="searchCache.page.size"
+            :total="parseInt(searchCache.page.size+'')"
         />
       </div>
     </div>

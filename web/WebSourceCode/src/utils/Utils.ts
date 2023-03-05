@@ -17,3 +17,10 @@ export function timestampToTime(timestamp: number) {
     let s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds();
     return Y + M + D + h + m + s;
 }
+
+/**
+ * 判断类型是否属于某一种
+ * @param props
+ */
+//@ts-ignore
+export const isType = <T>(props: any): props is T => typeof (props as T)['js'] !== 'undefined'

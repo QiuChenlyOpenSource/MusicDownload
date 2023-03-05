@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - App.py
-#  @修改时间    : 2023-03-05 01:48:03
-#  @上次修改    : 2023/3/5 下午1:48
+#  @修改时间    : 2023-03-05 10:51:25
+#  @上次修改    : 2023/3/5 下午10:51
 import time
 from concurrent.futures import Future
 
@@ -60,9 +60,11 @@ def add():
     print("准备开始下载任务")
     jsn = request.get_json()
     music = jsn['music']
+    platform = jsn['platform']
     config = jsn['config']
     # downSingle(jsn)
-    c.addTask(done, downSingle, music, c.get_folder(), config['onlyMatchSearchKey'], config['classificationMusicFile'])
+    c.addTask(done, downSingle, music, platform, c.get_folder(), config['onlyMatchSearchKey'],
+              config['classificationMusicFile'])
     return {
         'code': 200
     }
@@ -83,7 +85,10 @@ def done(ret: Future):
     """
     excepts = ret.exception()
     ret = ret.result()
-    print(f"download over {ret},except = {excepts}")
+    if ret['code'] != 200 or excepts:
+        print(f"下载失败," + ret['msg'], excepts)
+    else:
+        print(f"下载成功。")
 
 
 def executeFn(a1: str, a2: bool):
@@ -104,5 +109,5 @@ def Start():
     app.run(
         '0.0.0.0',
         8899,
-        debug=True
+        debug=False
     )

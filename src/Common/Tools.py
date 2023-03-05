@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-04 08:59:23
-#  @上次修改    : 2023/3/4 下午8:59
+#  @修改时间    : 2023-03-05 11:12:08
+#  @上次修改    : 2023/3/5 下午11:12
 import base64
 import os
 import threading
@@ -35,11 +35,17 @@ def subString(text: str, left: str, right: str):
 threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
-def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsClassification=True):
+def handleKuwo(mid):
+    from web.API.kw import kw
+    url = kw.getDownloadUrlV2(mid)
+    if url == 'failed':
+        return None
+    return url.json()['url']
+
+
+def handleQQ(music, musicFileInfo):
     songmid = music['songmid']
-    file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
-    musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {round(int(music['size']) / 1024 / 1024, 2)}MB - {file}"
-    musicid = music['musicid']
+    # musicid = music['musicid']
     # link = getQQMusicDownloadLinkByMacApp(file, songmid)
     # link = getQQMusicDownloadLinkV1(file, songmid)  # 早期方法 可食用
     # vkey = link['purl']
@@ -53,6 +59,36 @@ def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsC
         "hq" if music['prefix'] == "M800" else "mp3"
 
     link = QQApi.getQQMusicDownloadLinkByTrdServer(songmid, sourceSelect)
+    if link.find('stream.qqmusic.qq.com') == -1:
+        print(f"无法加载资源文件！解析歌曲下载地址失败！{musicFileInfo}，错误细节:" + link)
+        link = None
+    return link
+
+
+def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, musicAlbumsClassification=True):
+    """
+    多渠道下载
+    Args:
+        music: kwid or qqmusicobject
+        platform: qq kw wyy
+        download_home:
+        onlyShowSingerSelfSongs:
+        musicAlbumsClassification:
+
+    Returns:
+
+    """
+    if platform == 'qq':
+        musicid = music['musicid']
+        file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
+        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {round(int(music['size']) / 1024 / 1024, 2)}MB - {file}"
+        link = handleQQ(music, musicFileInfo)
+    elif platform == 'kw':
+        link = handleKuwo(music['mid'])
+        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
+    else:
+        link = None
+        musicFileInfo = ''
 
     # 测试歌词下载保存接口代码
     # lyric = getQQMusicMediaLyric(songmid) # 早期方法 已弃用
@@ -64,9 +100,11 @@ def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsC
     #     code.flush()
     # 测试歌词下载代码结束
 
-    if link.find('stream.qqmusic.qq.com') == -1:
-        print(f"无法加载资源文件！解析歌曲下载地址失败！{musicFileInfo}")
-        return False
+    if link is None:
+        return {
+            'msg': f"无法加载资源文件！解析歌曲下载地址失败！",
+            'code': "-1"
+        }
 
     # prepare
     localFile = f"{music['singer']} - {music['title']}.{music['extra']}".replace(
@@ -93,7 +131,7 @@ def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsC
     localLrcFile = os.path.join(my_path, f"{localLrcFile}")
 
     # 下载歌词
-    if not os.path.exists(localLrcFile):
+    if not os.path.exists(localLrcFile) and platform == 'qq':  # 只下载qq来源
         print(f"本地歌词文件不存在,准备自动下载: [{localLrcFile}].")
         # lyric = getQQMusicMediaLyric(songmid)  # lyric trans
         lyric = QQApi.getQQMusicLyricByMacApp(musicid)
@@ -115,9 +153,18 @@ def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsC
 
     # 下载歌曲
     if os.path.exists(localFile):
+        if platform != 'qq':
+            print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
+            return {
+                'code': 200,
+                'msg': "本地已下载,跳过下载"
+            }
         if os.path.getsize(localFile) == int(music['size']):
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
-            return True
+            return {
+                'code': 200,
+                'msg': "本地已下载,跳过下载"
+            }
         else:
             print(
                 f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(music['size'])},开始覆盖下载 [{mShower}].")
@@ -126,5 +173,7 @@ def downSingle(music, download_home, onlyShowSingerSelfSongs=False, musicAlbumsC
     with open(localFile, 'wb') as code:
         code.write(f.content)
         code.flush()
-
-    return True
+    return {
+        'code': 200,
+        'msg': "下载完成"
+    }

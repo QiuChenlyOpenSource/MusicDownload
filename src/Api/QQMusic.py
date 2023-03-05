@@ -2,17 +2,19 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-04 08:48:30
-#  @上次修改    : 2023/3/4 下午8:48
+#  @修改时间    : 2023-03-05 09:26:40
+#  @上次修改    : 2023/3/5 下午9:26
 
 import json
 import uuid
 from time import sleep
 
+from src.Api.BaseApi import BaseApi
 from src.Common import EncryptTools, Http
+from src.Types.Types import Songs
 
 
-class QQMusicApi():
+class QQMusicApi(BaseApi):
     QQHttpServer = Http.HttpRequest()
 
     mQQCookie = ""
@@ -352,6 +354,9 @@ class QQMusicApi():
             else:
                 print(f"不匹配: {song['singer']} {song['title']} != {title['author_simple']} {title['name']}")
         return None
+
+    def search(self, searchKey: str) -> list[Songs]:
+        pass
 
     def formatList(self, mlist):
         """

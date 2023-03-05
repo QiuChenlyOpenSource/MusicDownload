@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - EncryptTools.py
-#  @修改时间    : 2023-03-04 09:36:12
-#  @上次修改    : 2023/3/4 下午9:36
+#  @修改时间    : 2023-03-05 10:56:10
+#  @上次修改    : 2023/3/5 下午10:56
 import json
 import random
 import zlib
@@ -125,8 +125,11 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
         res = zlib.decompress(res.content).decode("utf-8")
     except:
         print("下载失败，无法获取原始文件链接。")
-        return ""
+        return "下载失败，无法获取原始文件链接。"
     res = json.loads(res)
+    if res['code'] == '403':
+        print("下载失败，解析服务器返回403错误代码。")
+        return "下载失败，解析服务器返回403错误代码。"
     # print(res['data'])
     return res['data']
 

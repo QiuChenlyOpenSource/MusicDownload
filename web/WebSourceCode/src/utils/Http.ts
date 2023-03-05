@@ -85,13 +85,19 @@ export const Api = {
             code: Number;
         }>("/status");
     },
-    async searchMusic(key: string, page: number) {
-        return this.get<SearchMusicResult>("/qq/search/" + key + "/" + page);
+    async searchMusic(key: string, page: number, type = 'qq', size = 30) {
+        let url = ''
+        if (type === 'qq')
+            url = "/qq/search/" + key + "/" + page
+        else if (type === 'kw')
+            url = "/kw/search/" + key + "/" + page + '/' + size
+        return this.get<SearchMusicResult>(url);
     },
-    postDownload(data: SearchMusicResultSingle, config: object) {
+    postDownload(data: object, config: object, platform = 'qq') {
         return this.post("/download", {
             music: data,
-            config: config
+            config: config,
+            platform: platform
         })
     },
     setBaseConfig(param: { folder: string; num: number }) {
