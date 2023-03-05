@@ -121,7 +121,11 @@ const handleDown = (data: SearchMusicResultSingle) => {
           </el-select>
         </template>
         <template #append>
-          <el-button :icon="Search" @click="search"/>
+          <el-button :icon="Search" @click="()=>{
+            searchCache = undefined;
+            music_current_page = 1;
+            search()
+          }"/>
         </template>
       </el-input>
       <div class="options">

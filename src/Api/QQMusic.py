@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-05 09:26:40
-#  @上次修改    : 2023/3/5 下午9:26
+#  @修改时间    : 2023-03-06 12:38:35
+#  @上次修改    : 2023/3/6 上午12:38
 
 import json
 import uuid
@@ -261,15 +261,38 @@ class QQMusicApi(BaseApi):
         page_per_num = 30
         data = {
             "comm": {
+                "ct": 19, "cv": 1845
+            },
+            "music.search.SearchCgiService": {
+                "method": "DoSearchForQQMusicDesktop",
+                "module": "music.search.SearchCgiService",
+                "param": {
+                    "query": key,
+                    "num_per_page": page_per_num,
+                    "page_num": page
+                }
+            }
+        }
+
+        data = {
+            "comm": {
+                "wid": "",
                 "tmeAppID": "qqmusic",
+                "authst": "",
                 "uid": "",
                 "gray": "0",
                 "OpenUDID": "2d484d3157d4ed482e406e6c5fdcf8c3d3275deb",
                 "ct": "6",
                 "patch": "2",
-                "sid": "202303012110354965823651",
+                "psrf_qqopenid": "",
+                "sid": "",
+                "psrf_access_token_expiresAt": "",
                 "cv": "80600",
                 "gzip": "0",
+                "qq": "",
+                "nettype": "2",
+                "psrf_qqunionid": "",
+                "psrf_qqaccess_token": "",
                 "tmeLoginType": "2"
             },
             "music.search.SearchCgiService.DoSearchForQQMusicDesktop": {
@@ -287,20 +310,16 @@ class QQMusicApi(BaseApi):
                 }
             }
         }
-        data = {"comm": {"ct": 19, "cv": 1845}, "music.search.SearchCgiService": {"method": "DoSearchForQQMusicDesktop",
-                                                                                  "module": "music.search.SearchCgiService",
-                                                                                  "param": {"query": key,
-                                                                                            "num_per_page": page_per_num,
-                                                                                            "page_num": page}}}
-
-        res = self.QQHttpServer.getHttp2Json(url, 1, data,
-                                             {"referer": "https://y.qq.com/portal/profile.html",
-                                              "Content-Type": "json/application;charset=utf-8",
-                                              "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36})"})
+        res = self.QQHttpServer.getHttp2Json(
+            url, 1, data, {
+                "referer": "https://y.qq.com/portal/profile.html",
+                "Content-Type": "json/application;charset=utf-8",
+                "user-agent": "QQ%E9%9F%B3%E4%B9%90/73222 CFNetwork/1406.0.3 Darwin/22.4.0"
+            })
         # print(res.text)
         jsons = res.json()
         # 开始解析QQ音乐的搜索结果
-        res = jsons['music.search.SearchCgiService']['data']
+        res = jsons['music.search.SearchCgiService.DoSearchForQQMusicDesktop']['data']
         lst = res['body']['song']['list']
         meta = res['meta']
 
