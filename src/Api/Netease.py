@@ -2,14 +2,12 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-05 11:50:33
-#  @上次修改    : 2023/3/5 下午11:50
-import base64
+#  @修改时间    : 2023-03-06 01:03:21
+#  @上次修改    : 2023/3/6 下午1:03
 import json
 import os
 import time
 
-import cv2
 from src.Api.BaseApi import BaseApi
 from src.Common import Http
 from src.Types.Types import Songs

@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Kuwo.py
-#  @修改时间    : 2023-03-05 10:22:34
-#  @上次修改    : 2023/3/5 下午10:22
+#  @修改时间    : 2023-03-06 01:21:25
+#  @上次修改    : 2023/3/6 下午1:21
 import json
 import uuid
 
@@ -39,7 +39,7 @@ class KwApi(BaseApi):
                 ck, "kw_token=", ";"
             )
             self.__csrf = kw_token
-            print(kw_token)
+            print("kw_token已生成", kw_token)
         return res
 
     def getReqId(self):

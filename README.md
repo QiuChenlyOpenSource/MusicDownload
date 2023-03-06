@@ -29,10 +29,13 @@ pipreqs ./ --encoding=utf8 --force # 在文件夹中执行
 
 首先安装最新的 python3 到你的操作系统里。
 
+以下所有操作皆默认假设当前目录在(Windows) D:/Downloads/QQFlacDownloader/ 或者(Unix/Linux) ~/Download/QQFlacDownloader/
+
 如果安装依赖包出现 404 错误或者太慢，可以用下面的代码切换到清华大学服务器安装。
 
 ```bash
 # 设置python的依赖安装镜像服务器为清华大学服务器
+# 
 pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
@@ -45,9 +48,11 @@ pip3 install -r requirements.txt # 安装软件依赖必须包
 终端/控制台 进入到本文件所在的目录 执行以下指令:
 
 ```bash
-//假设当前目录在 C:/User/Downloads/QQFlacDownloader/
 python3 MainServer.py
 ```
+
+启动后应该能看到这些信息，即表示你启动成功。
+![img_1.png](img_1.png)
 
 然后google chrome之类的浏览器打开[http://127.0.0.1:8899](http://127.0.0.1:8899)即可打开新世界
 
