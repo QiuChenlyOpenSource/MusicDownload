@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - EncryptTools.py
-#  @修改时间    : 2023-03-05 10:56:10
-#  @上次修改    : 2023/3/5 下午10:56
+#  @修改时间    : 2023-03-07 10:05:24
+#  @上次修改    : 2023/3/7 下午10:05
 import json
 import random
 import zlib
@@ -114,11 +114,24 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     s8 = "{\n\t\"text_1\":\t\"" + s6 + "\",\n\t\"text_2\":\t\"" + s7 + "\",\n\t\"sign_1\":\t\"" + lowerCase + "\",\n\t\"time\":\t\"" + time + "\",\n\t\"sign_2\":\t\"" + hashMd5(
         s6.replace("\\", "") + s7.replace("\\", "") + lowerCase + time + "NDRjZGIzNzliNzEx").lower() + "\"\n}"
 
+    # 资源大师接口
+    # s5 = hashMd5(
+    #     "2c6d031981d1b6920fefd537043fd6eb" + time + "6562653262383463363633646364306534333663").lower()
+    # s6 = "{\\\"method\\\":\\\"GetMusicUrl\\\",\\\"platform\\\":\\\"" + platform + "\\\",\\\"t1\\\":\\\"" + t1_MusicID + "\\\",\\\"t2\\\":\\\"" + t2 + "\\\"}"
+    # s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84c599d711066ef740eb49109dac9782\\\",\\\"appVersion\\\":\\\"4.0.9.V1\\\",\\\"vercode\\\":\\\"4090\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}"
+    # s8 = "{\n\t\"text_1\":\t\"" + s6 + "\",\n\t\"text_2\":\t\"" + s7 + "\",\n\t\"sign_1\":\t\"" + s5 + "\",\n\t\"time\":\t\"" + time + "\",\n\t\"sign_2\":\t\"" + hashMd5(
+    #     s6.replace("\\", "") + s7.replace("\\", "") + s5 + time + "NDRjZGIzNzliNzEx").lower() + "\"\n}"
+    # 资源大师接口结束
+
     s8 = AESEncrypt(s8, "6480fedae539deb2")
     s8 = byte2hex(s8)
     s8 = byte2hex(s8.encode("utf-8")).encode("utf-8")
     s8 = zlib.compress(s8)
-    url = "http://app.kzti.top:1030/client/cgi-bin/api.fcg", "http://119.91.134.171:1030/client/cgi-bin/api.fcg"
+    url = [
+        "http://app.kzti.top:1030/client/cgi-bin/api.fcg",
+        "http://119.91.134.171:1030/client/cgi-bin/api.fcg",
+        "http://106.52.68.150:1030/client/cgi-bin/api.fcg"  # 资源大师接口
+    ]
     url = url[1]
     res = mHttp.getHttp(url, 1, s8)
     try:

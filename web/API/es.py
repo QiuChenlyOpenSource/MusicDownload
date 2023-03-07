@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - es.py
-#  @修改时间    : 2023-03-05 06:56:46
-#  @上次修改    : 2023/3/5 下午6:56
+#  @修改时间    : 2023-03-07 10:54:42
+#  @上次修改    : 2023/3/7 下午10:54
 import json
 
 from flask import request
@@ -56,6 +56,25 @@ def getUserPlaylist(userid: str):
     return {
         'code': 200,
         'list': state
+    }
+
+
+@app.get("/wyy/search/<searchKey>/<page>/<size>")
+def essearch(searchKey: str, page=1, size=100):
+    page = int(page)
+    size = int(size)
+    offset = (page - 1) * size
+    if offset < 0 or size <= 0:
+        return {
+            'code': 400
+        }
+    lst = netes.searchMusic(
+        searchKey, int(page), int(size))  # Mac端搜索接口
+    page = lst['page']
+    return {
+        'code': 200,
+        'list': lst['data'],
+        'page': page
     }
 
 

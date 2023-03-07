@@ -2,8 +2,9 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-06 06:19:44
-#  @上次修改    : 2023/3/6 下午6:19
+#  @修改时间    : 2023-03-07 11:50:10
+#  @上次修改    : 2023/3/7 下午11:50
+import datetime
 import json
 import os
 import time
@@ -54,6 +55,7 @@ class Netease(BaseApi):
         Returns:
 
         """
+        # TODO 需要测试此处代码
         u = '/cloud'
         name = os.path.basename(fileLocate)
         with open(fileLocate, "rb") as conf:
@@ -134,12 +136,12 @@ class Netease(BaseApi):
             return -1
         return [
             {
-                "name": li['name'],
-                "id": li['id'],
+                "title": li['name'],
+                "mid": li['id'],
                 'author_simple': li['ar'][0]['name'],  # li['ar'][0]['name'] if len(li['ar']) == 1 else
                 "author": li['ar'],  # 数组[{'id': 472822, 'name': 'JJD', 'tns': [], 'alias': []}]
                 'publishTime': li['publishTime'],
-                'album': li['al']
+                'album': li['al']['name']
             } for li in js['songs']
         ]
 
@@ -234,3 +236,123 @@ class Netease(BaseApi):
         })
         r = r.json()
         return r
+
+    def searchMusicByTrd(self, searchKey="周杰伦", pageNum=1, pageSize=100):
+        """
+        第三方接口搜索网易云歌曲
+        Args:
+            searchKey:
+            pageNum:
+            pageSize:
+
+        Returns:
+
+        """
+        u = 'http://music.fy6b.com/'
+        d = f'type=netease&keyword={searchKey}&page={pageNum}&limit={pageSize}'
+        r = self.httpw(u, 1, d.encode('utf-8'), {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 13; MI 5s Build/TQ1A.230105.002.A1)"
+        })
+        r = r.json()
+        lst = []
+        for li in r:
+            it = {
+                'prefix': "",
+                'extra': "flac",
+                'notice': "暂无",
+                'mid': li['id'],
+                'musicid': li['id'],
+                'songmid': li['id'],
+                'size': "无",
+                'title': li['name'],
+                'singer': li['singer'],
+                'album': "无专辑",
+                'time_publish': "无",
+                # 'hasLossless': li['hasLossless'],
+                'readableText': f"{li['singer']} - {li['name']}"
+            }
+            lst.append(it)
+        return {
+            'data': lst,
+            'page': {
+                'size': 10000,  # 这个接口不反悔这个字段 所以只能固定一万了
+                'next': pageNum + 1,
+                'cur': pageNum,
+                'searchKey': searchKey
+            }
+        }
+
+    def searchMusic(self, searchKey="周杰伦", pageNum=1, pageSize=100):
+        """
+        官方接口搜索网易云歌曲
+        Args:
+            searchKey:
+            pageNum:
+            pageSize:
+
+        Returns:
+
+        """
+        u = f'/cloudsearch?keywords={searchKey}&offset={pageNum}&limit={pageSize}'
+        res = self.http(u)
+        res = res.json()
+
+        result = res['result']
+        lst = []
+        for li in result['songs']:
+            au_l = li['l']
+            au_m = li['m']
+            au_h = li['h']
+            au_sq = li['sq']
+            au_hr = li['hr']
+
+            if au_hr is not None:
+                size = au_hr['size']
+                extra = 'flac'
+                bitrate = round(int(au_hr['br']) / 1000)
+            elif au_sq is not None:
+                size = au_sq['size']
+                extra = 'flac'
+                bitrate = round(int(au_sq['br']) / 1000)
+            elif au_h is not None:
+                size = au_h['size']
+                extra = 'mp3'
+                bitrate = round(int(au_h['br']) / 1000)
+            elif au_m is not None:
+                size = au_m['size']
+                extra = 'mp3'
+                bitrate = round(int(au_m['br']) / 1000)
+            else:
+                size = au_l['size']
+                extra = 'aac'
+                bitrate = round(int(au_l['br']) / 1000)
+
+            it = {
+                'prefix': "",
+                'extra': extra,
+                'notice': "FLAC 无损音质" if extra == 'flac' else f'{extra.upper()} {bitrate}Kbps',
+                'mid': li['id'],
+                'musicid': li['id'],
+                'songmid': li['id'],
+                'size': "%.2fMB" % (int(size) / 1024 / 1024),
+                'title': li['name'],
+                'singer': "/".join([
+                    it['name'] for it in li['ar']
+                ]),
+                'author_simple': li['ar'][0]['name'],
+                'album': li['al']['name'],
+                'time_publish': li['publishTime'],
+                # 'hasLossless': li['hasLossless'],
+                # 'readableText': f"{li['singer']} - {li['name']}"
+            }
+            lst.append(it)
+        return {
+            'data': lst,
+            'page': {
+                'size': result['songCount'],  # 这个接口不反悔这个字段 所以只能固定一万了
+                'next': pageNum + 1,
+                'cur': pageNum,
+                'searchKey': searchKey
+            }
+        }

@@ -183,7 +183,7 @@ const handleDown = (music: NeteasePlayListSongsList) => {
             />
             <el-table-column
                 show-overflow-tooltip="true"
-                prop="name"
+                prop="title"
                 label="歌曲名"
                 min-width="300"
             />
@@ -198,7 +198,7 @@ const handleDown = (music: NeteasePlayListSongsList) => {
             />
             <el-table-column
                 show-overflow-tooltip="true"
-                prop="album.name"
+                prop="album"
                 label="专辑"
                 width="200"
             />

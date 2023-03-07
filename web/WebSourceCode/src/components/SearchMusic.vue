@@ -7,14 +7,27 @@ import {
   SearchMusicResult,
   SearchMusicResultSingle,
 } from "@/utils/type/BasicType";
-import {DividerProps} from "element-plus";
-import {isType} from "@/utils/Utils";
 
 const platform = ref("kw");
 const {basicStore} = SystemStore();
 const refbasicStore = ref2(basicStore);
 const music_current_page = ref(1);
 const headRef = ref();
+const apiList = ref([
+  {
+    name: "QQ音乐",
+    value: 'qq'
+  }, {
+    name: "网易云音乐",
+    value: 'wyy'
+  }, {
+    name: "酷我音乐",
+    value: 'kw'
+  }, {
+    name: "咪咕音乐",
+    value: 'mg'
+  },
+])
 
 watch(refbasicStore.lastSearch, (now, old) => {
   if (now.length === 0) {
@@ -38,6 +51,22 @@ const getMusicSinger = (music: SearchMusicResultSingle) => music.singer;
 // .map(v => {
 // return v.name
 // }).join(music.singer.length === 1 ? '' : "&")
+
+const timeFormat = (row: SearchMusicResultSingle) => {
+  if (platform.value === 'wyy') {
+    let date: any = new Date(row.time_publish);
+    let day = date.getDate();
+    let month = date.getMonth();
+    let year = date.getFullYear();
+    if (day < 10) day = '0' + day;
+    if (month < 10) month = `0${month}`;
+    return year + '-' + month + '-' + day
+  }
+  return row.time_publish === ''
+      ? '1970-01-01'
+      : row.time_publish;
+}
+
 
 /**
  * 检查这首曲子是否不符合过滤标准 true表示曲子可以给用户显示 false反之
@@ -125,9 +154,7 @@ const handleDown = (data: SearchMusicResultSingle) => {
               placeholder="请选择接口"
               style="width: 120px"
           >
-            <el-option label="QQ音乐" value="qq"/>
-            <!--            <el-option label="网易云音乐" value="wyy"/>-->
-            <el-option label="酷我音乐" value="kw"/>
+            <el-option v-for="it in apiList" :label="it.name" :value="it.value"/>
           </el-select>
         </template>
         <template #append>
@@ -211,13 +238,7 @@ const handleDown = (data: SearchMusicResultSingle) => {
               style="width: 100%; z-index: 0"
           >
             <el-table-column
-                :formatter="
-                (row:SearchMusicResultSingle) => {
-                  return row.time_publish === ''
-                    ? '1970-01-01'
-                    : row.time_publish;
-                }
-              "
+                :formatter="timeFormat"
                 prop="time_public"
                 label="发表时间"
                 width="120"

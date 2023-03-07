@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-07 08:32:25
-#  @上次修改    : 2023/3/7 下午8:32
+#  @修改时间    : 2023-03-07 11:49:52
+#  @上次修改    : 2023/3/7 下午11:49
 import base64
 import os
 import threading
@@ -73,6 +73,14 @@ def handleKuwo(mid: str, type: str):
     return url.json()['url']
 
 
+def handleMigu(mid: str, _type: str):
+    from web.API.kw import mg
+    url = mg.getDownloadLink(mid, _type)
+    if url is None:
+        return None
+    return url
+
+
 def handleWyy(mid):
     from web.API.es import netes
     url = netes.getMusicUrl(mid)
@@ -109,7 +117,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
     多渠道下载
     Args:
         music: kwid or qqmusicobject
-        platform: qq kw wyy
+        platform: qq kw wyy mg
         download_home:
         onlyShowSingerSelfSongs:
         musicAlbumsClassification:
@@ -120,19 +128,21 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
     if platform == 'qq':
         musicid = music['musicid']
         file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
-        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {round(int(music['size']) / 1024 / 1024, 2)}MB - {file}"
+        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {music['size']} - {file}"
         link = handleQQ(music, musicFileInfo)
     elif platform == 'kw':
         link = handleKuwo(music['mid'], music['prefix'] + 'k' + music['extra'])
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
+    elif platform == 'mg':
+        link = handleMigu(music['mid'], music['prefix'])
+        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'wyy':
-        link: str = handleWyy(music['id'])
+        link: str = handleWyy(music['mid'])
         if link is not None:
             music['extra'] = 'flac' if link.find(".flac?") != -1 else 'mp3'
         music['singer'] = music['author_simple']
-        music['title'] = music['name']
-        music["album"] = music['album']['name']
-        musicFileInfo = f"{music['author_simple']} - {music['name']}"
+        music["album"] = music['album']
+        musicFileInfo = f"{music['author_simple']} - {music['title']}"
     else:
         link = None
         musicFileInfo = ''

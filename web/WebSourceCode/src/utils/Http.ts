@@ -91,6 +91,10 @@ export const Api = {
             url = "/qq/search/" + key + "/" + page
         else if (type === 'kw')
             url = "/kw/search/" + key + "/" + page + '/' + size
+        else if (type === 'wyy')
+            url = "/wyy/search/" + key + "/" + page + '/' + size
+        else if (type === 'mg')
+            url = "/mg/search/" + key + "/" + page + '/' + size
         return this.get<SearchMusicResult>(url);
     },
     postDownload(data: object, config: object, platform = 'qq') {
