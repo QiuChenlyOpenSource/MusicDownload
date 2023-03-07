@@ -138,6 +138,17 @@ const mPlaylistDropdown = ref<Array<{
   value: MusicPlayList2List,
   label: string,
 }>>([])
+
+const loadUserPlaylist = (currentSelectItemIndex: number) => {
+  console.log(currentSelectItemIndex)
+  for (let i of mPlaylistDropdown.value) {
+    if (i.value.id === currentSelectItemIndex) {
+      // select value
+      totalSize.value = i.value.trackCount
+    }
+  }
+  page_change(1)
+}
 </script>
 
 <template>
@@ -163,7 +174,7 @@ const mPlaylistDropdown = ref<Array<{
               value-key="value.id"
               :options="mPlaylistDropdown"
               placeholder="选择一个歌单"
-              @change="UserFunction.fetchPlayListMusic(selectPlaylist)"
+              @change="loadUserPlaylist"
               size="large"
           >
             <template #default="{ item }">
@@ -283,8 +294,8 @@ const mPlaylistDropdown = ref<Array<{
 
     .tab-split {
       margin-top: 10px;
-      margin-left: 50%;
-      transform: translateX(-50%);
+      display: flex;
+      justify-content: center;
     }
   }
 }
