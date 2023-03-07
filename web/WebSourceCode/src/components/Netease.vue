@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {onMounted, onUnmounted, ref, computed} from "vue";
+import {onMounted, onUnmounted, ref, computed, watch} from "vue";
 import {ref2, SystemStore} from "@/store/SystemStore";
 import {Api} from "@/utils/Http";
 import QrcodeVue from 'qrcode.vue';
@@ -75,6 +75,11 @@ const UserFunction = {
       let pid = r.list[0].id
       totalSize.value = r.list[0].trackCount
       selectPlaylist.value = pid
+
+      mPlaylistDropdown.value = playlist.value.map(v => ({
+        value: v,
+        label: v.name,
+      }))
       return this.fetchPlayListMusic(pid + '')
     })
   },
@@ -128,6 +133,11 @@ const handleDown = (music: NeteasePlayListSongsList) => {
     classificationMusicFile: basicStore.config.classificationMusicFile
   }, 'wyy')
 }
+
+const mPlaylistDropdown = ref<Array<{
+  value: MusicPlayList2List,
+  label: string,
+}>>([])
 </script>
 
 <template>
@@ -146,23 +156,26 @@ const handleDown = (music: NeteasePlayListSongsList) => {
       <div v-else class="login">
         <UserInfo :user-info="user.netease.value.user"/>
         <div class="list-content">
-          <el-select class="playlist" @change="UserFunction.fetchPlayListMusic(selectPlaylist+'')"
-                     v-model="selectPlaylist"
-                     placeholder="选择一个歌单" size="large">
-            <el-option
-                v-for="item in playlist"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-                class="select-list"
-            >
-              <el-avatar class="list-img" :src="item.coverImgUrl"/>
-              <div class="list-right">
-                <span class="list-name">{{ item.name }}</span>
-                <span class="list-size">{{ item.trackCount }}首</span>
+          <el-select-v2
+              filterable
+              class="playlist"
+              v-model="selectPlaylist"
+              value-key="value.id"
+              :options="mPlaylistDropdown"
+              placeholder="选择一个歌单"
+              @change="UserFunction.fetchPlayListMusic(selectPlaylist)"
+              size="large"
+          >
+            <template #default="{ item }">
+              <div class="select-list">
+                <el-avatar size="small" class="list-img" :src="item.value.coverImgUrl"/>
+                <div class="list-right">
+                  <span class="list-name">{{ item.value.name }}</span>
+                  <span class="list-size">{{ item.value.trackCount }}首</span>
+                </div>
               </div>
-            </el-option>
-          </el-select>
+            </template>
+          </el-select-v2>
           <span class="search-hint">结果列表[搜索到{{ totalSize }}条数据,当前第{{
               page
             }}页]</span>
@@ -182,13 +195,13 @@ const handleDown = (music: NeteasePlayListSongsList) => {
                 width="120"
             />
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="title"
                 label="歌曲名"
                 min-width="300"
             />
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 :formatter="(row:NeteasePlayListSongsList) => {
                   return row.author.map(v=>v.name).join(' / ')
                 }"
@@ -197,7 +210,7 @@ const handleDown = (music: NeteasePlayListSongsList) => {
                 width="200"
             />
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="album"
                 label="专辑"
                 width="200"
@@ -284,7 +297,11 @@ const handleDown = (music: NeteasePlayListSongsList) => {
   display: flex;
   flex-direction: row;
   height: auto;
-  padding: 10px;
+  align-items: center;
+
+  .list-img {
+
+  }
 
   .list-right {
     margin-left: 10px;
@@ -304,7 +321,6 @@ const handleDown = (music: NeteasePlayListSongsList) => {
   }
 
   .list-size {
-    margin-top: 4px !important;
     font-size: 6pt;
   }
 

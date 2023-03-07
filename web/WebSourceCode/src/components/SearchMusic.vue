@@ -244,7 +244,7 @@ const handleDown = (data: SearchMusicResultSingle) => {
                 width="120"
             />
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="title"
                 label="歌曲名"
                 min-width="300"
@@ -257,21 +257,21 @@ const handleDown = (data: SearchMusicResultSingle) => {
               </template>
             </el-table-column>
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 :formatter="getSinger"
                 prop="singer.name"
                 label="艺术家"
                 width="200"
             />
             <el-table-column
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="album"
                 label="专辑"
                 width="200"
             />
             <el-table-column
                 :formatter="getFileTypeAndSize"
-                show-overflow-tooltip="true"
+                :show-overflow-tooltip="true"
                 prop="notice"
                 label="品质"
                 width="250"
