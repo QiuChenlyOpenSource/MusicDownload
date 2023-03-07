@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-05 11:56:04
-#  @上次修改    : 2023/3/5 下午11:56
+#  @修改时间    : 2023-03-07 08:32:25
+#  @上次修改    : 2023/3/7 下午8:32
 import base64
 import os
 import threading
@@ -65,10 +65,10 @@ def fixWindowsFileName2Normal(texts=''):
     return texts
 
 
-def handleKuwo(mid):
+def handleKuwo(mid: str, type: str):
     from web.API.kw import kw
-    url = kw.getDownloadUrlV2(mid)
-    if url == 'failed':
+    url = kw.getDownloadUrlV2(mid, type)
+    if url.text == 'failed' or url.text == 'res not found':
         return None
     return url.json()['url']
 
@@ -123,7 +123,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {round(int(music['size']) / 1024 / 1024, 2)}MB - {file}"
         link = handleQQ(music, musicFileInfo)
     elif platform == 'kw':
-        link = handleKuwo(music['mid'])
+        link = handleKuwo(music['mid'], music['prefix'] + 'k' + music['extra'])
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'wyy':
         link: str = handleWyy(music['id'])

@@ -207,7 +207,7 @@ const handleDown = (music: NeteasePlayListSongsList) => {
                 <el-button link type="primary" size="small" @click="handleDown(scope.row)"
                 >下载
                 </el-button>
-                <el-button link type="primary" size="small">试听</el-button>
+                <!--                <el-button link type="primary" size="small">试听</el-button>-->
               </template>
             </el-table-column>
           </el-table>

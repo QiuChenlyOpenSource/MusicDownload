@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-06 12:38:35
-#  @上次修改    : 2023/3/6 上午12:38
+#  @修改时间    : 2023-03-07 08:42:44
+#  @上次修改    : 2023/3/7 下午8:42
 
 import json
 import uuid
@@ -467,7 +467,7 @@ class QQMusicApi(BaseApi):
                 'mid': mid,
                 'musicid': i['id'],
                 'songmid': i['mid'],
-                'size': fsize,
+                'size': f"%.2fMB" % (fsize / 1024 / 1024),
                 'title': flacName,
                 'singer': f'{singer}',
                 'album': albumName,

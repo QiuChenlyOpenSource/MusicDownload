@@ -2,13 +2,14 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Http.py
-#  @修改时间    : 2023-03-05 04:04:02
-#  @上次修改    : 2023/3/5 下午4:04
+#  @修改时间    : 2023-03-06 06:16:00
+#  @上次修改    : 2023/3/6 下午6:16
 
 import json
 from http.cookiejar import Cookie
 
 import requests
+from requests import Request, Session
 
 
 class HttpRequest:
@@ -52,7 +53,7 @@ class HttpRequest:
         d = d.encode('utf-8')
         return self.getHttp(url, method, d, header)
 
-    def getSession(self):
+    def getSession(self) -> Session:
         return self.__session
 
     def setCookie(self, ck):

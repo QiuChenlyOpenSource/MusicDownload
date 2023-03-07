@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-06 01:03:21
-#  @上次修改    : 2023/3/6 下午1:03
+#  @修改时间    : 2023-03-06 06:19:44
+#  @上次修改    : 2023/3/6 下午6:19
 import json
 import os
 import time
@@ -44,6 +44,31 @@ class Netease(BaseApi):
         log['cookie'] = self.cookie()
         print(u, log)
         return log
+
+    def uploadMusic2NetEaseCloud(self, fileLocate: str):
+        """
+        上传歌曲到网易云云盘，此函数还未经过代码测试
+        Args:
+            fileLocate:
+
+        Returns:
+
+        """
+        u = '/cloud'
+        name = os.path.basename(fileLocate)
+        with open(fileLocate, "rb") as conf:
+            upFile = {
+                'songFile': (name, conf)
+            }
+        res = self.__httpServer.getSession().post(u, files=upFile, headers={
+            'Content-Type': 'multipart/form-data'
+        })
+        res = res.json()
+        print(res)
+
+    def getUserDetail(self):
+        u = '/user/account'
+        return self.http(u).json()
 
     def getUserDetail(self):
         u = '/user/account'

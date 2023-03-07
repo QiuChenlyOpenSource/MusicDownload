@@ -2,10 +2,12 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - test.py
-#  @修改时间    : 2023-03-04 07:59:51
-#  @上次修改    : 2023/3/4 下午7:59
+#  @修改时间    : 2023-03-06 06:02:23
+#  @上次修改    : 2023/3/6 下午6:02
 import time
+import uuid
 from concurrent.futures import Future
+from uuid import UUID
 
 import requests
 from flask import Flask

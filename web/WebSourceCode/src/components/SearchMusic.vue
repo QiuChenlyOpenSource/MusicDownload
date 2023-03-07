@@ -82,6 +82,16 @@ function getSinger(
   return getMusicSinger(row);
 }
 
+function getFileTypeAndSize(
+    row: SearchMusicResultSingle,
+    column: any,
+    cellValue: any,
+    index: number
+) {
+  // console.log(row)
+  return row.notice + " | " + row.size
+}
+
 const paddingHeadHeight = ref(0);
 onMounted(() => {
   const h = headRef.value as HTMLDivElement;
@@ -217,7 +227,14 @@ const handleDown = (data: SearchMusicResultSingle) => {
                 prop="title"
                 label="歌曲名"
                 min-width="300"
-            />
+            >
+              <template #default="scope">
+                <div class="title-tip">
+                  <div class="flac-tip" v-if="scope.row.extra === 'flac'">无损</div>
+                  <div class="name">{{ scope.row.title }}</div>
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column
                 show-overflow-tooltip="true"
                 :formatter="getSinger"
@@ -232,17 +249,18 @@ const handleDown = (data: SearchMusicResultSingle) => {
                 width="200"
             />
             <el-table-column
+                :formatter="getFileTypeAndSize"
                 show-overflow-tooltip="true"
                 prop="notice"
                 label="品质"
-                width="180"
+                width="250"
             />
-            <el-table-column fixed="right" label="操作" width="120">
+            <el-table-column fixed="right" label="操作">
               <template #default="scope">
                 <el-button link type="primary" size="small" @click="handleDown(scope.row)"
                 >下载
                 </el-button>
-                <el-button link type="primary" size="small">试听</el-button>
+                <!--                <el-button link type="primary" size="small">试听</el-button>-->
               </template>
             </el-table-column>
           </el-table>
@@ -359,8 +377,30 @@ const handleDown = (data: SearchMusicResultSingle) => {
 
     .my-tb {
       height: 100%;
+
+
+      .title-tip {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .name {
+
+        }
+
+        .flac-tip {
+          font-size: 12px;
+          color: #ffb703;
+          border: #ffb703 1px solid;
+          line-height: normal;
+          margin-right: 8px;
+          padding: 0 4px;
+          border-radius: 4px;
+        }
+      }
     }
   }
+
 
   .tab-split {
     display: flex;
