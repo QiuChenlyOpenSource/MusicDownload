@@ -8,6 +8,9 @@ import {
   SearchMusicResultSingle,
 } from "@/utils/type/BasicType";
 
+//@ts-ignore
+import EncodeEx from "../utils/MyMp3.js"
+
 const platform = ref("kw");
 const {basicStore} = SystemStore();
 const refbasicStore = ref2(basicStore);
@@ -26,6 +29,9 @@ const apiList = ref([
   }, {
     name: "咪咕音乐",
     value: 'mg'
+  }, {
+    name: "MyFreeMP3",
+    value: 'myfreemp3'
   },
 ])
 
@@ -91,14 +97,21 @@ const search = () => {
       ) === undefined
   )
     basicStore.searchHistory.push(basicStore.lastSearch);
-  Api.searchMusic(basicStore.lastSearch, music_current_page.value, platform.value).then((r) => {
+
+  const resolve = (r: SearchMusicResult) => {
     let lst = [] as Array<SearchMusicResultSingle>;
     r.list.forEach((v) => {
       if (filterList(v)) lst.push(v);
     });
     r.list = lst;
     searchCache.value = r;
-  });
+  };
+
+  if (platform.value === 'myfreemp3') {
+    let data = EncodeEx({"type": "YQM", "text": basicStore.lastSearch, "page": music_current_page.value, "v": "beta"})
+    Api.searchMusicForMyFreeMp3(platform.value, data).then(resolve);
+  } else
+    Api.searchMusic(basicStore.lastSearch, music_current_page.value, platform.value).then(resolve);
 };
 
 function getSinger(
@@ -127,9 +140,31 @@ onMounted(() => {
   paddingHeadHeight.value = h.offsetTop + h.offsetHeight;
 });
 
+function parseParams(data: any) {
+  try {
+    var tempArr = [];
+    for (var i in data) {
+      var key = encodeURIComponent(i);
+      var value = encodeURIComponent(data[i]);
+      tempArr.push(key + '=' + value);
+    }
+    var urlParamsStr = tempArr.join('&');
+    return urlParamsStr;
+  } catch (err) {
+    return '';
+  }
+}
+
 const handleDown = (data: SearchMusicResultSingle) => {
   console.log(data)
-  Api.postDownload(data, {
+  let _data = {...data}
+  if (platform.value === 'myfreemp3') {
+    _data['prefix'] = 'https://test.quanjian.com.cn/m/api/link?' + parseParams(EncodeEx({
+      "id": _data.mid.toString(),
+      "quality": _data.prefix.toString()
+    }))
+  }
+  Api.postDownload(_data, {
         onlyMatchSearchKey: basicStore.config.onlyMatchSearchKey,
         ignoreNoAlbumSongs: basicStore.config.ignoreNoAlbumSongs,
         classificationMusicFile: basicStore.config.classificationMusicFile

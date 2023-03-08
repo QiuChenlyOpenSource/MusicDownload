@@ -2,12 +2,11 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-07 08:42:44
-#  @上次修改    : 2023/3/7 下午8:42
+#  @修改时间    : 2023-03-08 01:59:25
+#  @上次修改    : 2023/3/8 上午1:59
 
 import json
 import uuid
-from time import sleep
 
 from src.Api.BaseApi import BaseApi
 from src.Common import EncryptTools, Http

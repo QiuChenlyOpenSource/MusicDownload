@@ -2,9 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-07 11:50:10
-#  @上次修改    : 2023/3/7 下午11:50
-import datetime
+#  @修改时间    : 2023-03-08 01:58:56
+#  @上次修改    : 2023/3/8 上午1:58
 import json
 import os
 import time
@@ -85,7 +84,7 @@ class Netease(BaseApi):
         Returns:
 
         """
-        u = f'/likelist?uid={uid}'
+        u = f'/likelist?uid={uid}' + f"&time={time.time_ns()}"
         res = self.http(u).json()
         return res['ids']
 
@@ -100,7 +99,7 @@ class Netease(BaseApi):
         Returns:
 
         """
-        u = f'/user/playlist?uid={uid}'
+        u = f'/user/playlist?uid={uid}' + f"&time={time.time_ns()}"
         res = self.http(u).json()
         userPlaylist = [
             {
@@ -125,7 +124,7 @@ class Netease(BaseApi):
         Returns:
 
         """
-        u = f'/playlist/track/all?id={playId}&limit={size}&offset={offset}'
+        u = f'/playlist/track/all?id={playId}&limit={size}&offset={offset}' + f"&time={time.time_ns()}"
         res = self.http(u)
         if res.status_code != 200:
             return []
@@ -294,7 +293,7 @@ class Netease(BaseApi):
         Returns:
 
         """
-        u = f'/cloudsearch?keywords={searchKey}&offset={pageNum}&limit={pageSize}'
+        u = f'/cloudsearch?keywords={searchKey}&offset={pageNum}&limit={pageSize}' + f"&time={time.time_ns()}"
         res = self.http(u)
         res = res.json()
 

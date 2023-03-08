@@ -86,16 +86,24 @@ export const Api = {
         }>("/status");
     },
     async searchMusic(key: string, page: number, type = 'qq', size = 30) {
-        let url = ''
-        if (type === 'qq')
-            url = "/qq/search/" + key + "/" + page
-        else if (type === 'kw')
-            url = "/kw/search/" + key + "/" + page + '/' + size
-        else if (type === 'wyy')
-            url = "/wyy/search/" + key + "/" + page + '/' + size
-        else if (type === 'mg')
-            url = "/mg/search/" + key + "/" + page + '/' + size
+        let url = "/" + type + "/search/" + key + "/" + page + "/" + size
         return this.get<SearchMusicResult>(url);
+    },
+    async searchMusicForMyFreeMp3(type = 'myfreemp3', data: {
+        page: number,
+        text: string,
+        token: string,
+        type: string,
+        v: string,
+    } = {
+        page: 1,
+        text: "",
+        token: "",
+        type: "YQM",
+        v: "beta",
+    }) {
+        let url = "/" + type + "/search"
+        return this.post<SearchMusicResult>(url, data);
     },
     postDownload(data: object, config: object, platform = 'qq') {
         return this.post("/download", {

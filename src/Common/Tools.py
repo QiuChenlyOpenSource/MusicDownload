@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-07 11:49:52
-#  @上次修改    : 2023/3/7 下午11:49
+#  @修改时间    : 2023-03-08 08:59:48
+#  @上次修改    : 2023/3/8 上午8:59
 import base64
 import os
 import threading
@@ -125,6 +125,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
     Returns:
 
     """
+    header = {}
     if platform == 'qq':
         musicid = music['musicid']
         file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
@@ -143,6 +144,15 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         music['singer'] = music['author_simple']
         music["album"] = music['album']
         musicFileInfo = f"{music['author_simple']} - {music['title']}"
+    elif platform == 'myfreemp3':
+        link = music['prefix']
+        musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
+        header = {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "origin": "https://tools.liumingye.cn",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.50"
+        }
     else:
         link = None
         musicFileInfo = ''
@@ -231,7 +241,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
             print(
                 f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(music['size'])},开始覆盖下载 [{mShower}].")
     print(f'正在下载 | {music["album"]} / {musicFileInfo}')
-    f = requests.get(link)
+    f = requests.get(link, headers=header)
     with open(localFile, 'wb') as code:
         code.write(f.content)
         code.flush()
