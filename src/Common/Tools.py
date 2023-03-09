@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-08 08:59:48
-#  @上次修改    : 2023/3/8 上午8:59
+#  @修改时间    : 2023-03-09 06:01:38
+#  @上次修改    : 2023/3/9 下午6:01
 import base64
 import os
 import threading
@@ -132,7 +132,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {music['size']} - {file}"
         link = handleQQ(music, musicFileInfo)
     elif platform == 'kw':
-        link = handleKuwo(music['mid'], music['prefix'] + 'k' + music['extra'])
+        link = handleKuwo(music['mid'], '1000kape')  # music['prefix'] + 'k' + music['extra']
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'mg':
         link = handleMigu(music['mid'], music['prefix'])

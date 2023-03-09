@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Kuwo.py
-#  @修改时间    : 2023-03-08 01:59:08
-#  @上次修改    : 2023/3/8 上午1:59
+#  @修改时间    : 2023-03-09 06:01:06
+#  @上次修改    : 2023/3/9 下午6:01
 import uuid
 
 from src.Api.BaseApi import BaseApi
@@ -179,5 +179,6 @@ class KwApi(BaseApi):
         # 1000kape 320kmp3 192kmp3 128kmp3
         # url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid=82988488&format=mp3&response=url&br=320kmp3'
         url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&br={br}'
+        url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&format=mp3&response=url&br={br}'
         res = self.getUrl(url)
         return res
