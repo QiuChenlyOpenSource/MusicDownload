@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-08 01:59:25
-#  @上次修改    : 2023/3/8 上午1:59
+#  @修改时间    : 2023-03-10 12:58:24
+#  @上次修改    : 2023/3/10 下午12:57
 
 import json
 import uuid
@@ -241,7 +241,7 @@ class QQMusicApi(BaseApi):
         """
         return EncryptTools.testGetLink(mid, quality=sourceType)
 
-    def getQQMusicSearch(self, key: str = "", page: int = 1) -> (dict, dict):
+    def getQQMusicSearch(self, key: str = "", page: int = 1, size: int = 30) -> (dict, dict):
         """搜索音乐
 
         参数:
@@ -257,7 +257,7 @@ class QQMusicApi(BaseApi):
         # base data content from qqmusic pc-client-apps
 
         # 一次获取最多获取30条数据 否则返回空列表
-        page_per_num = 30
+        page_per_num = size
         data = {
             "comm": {
                 "ct": 19, "cv": 1845
