@@ -98,13 +98,13 @@ const search = () => {
   )
     basicStore.searchHistory.push(basicStore.lastSearch);
 
-  const resolve = (r: SearchMusicResult) => {
+  const resolve = (searchMusicResult: SearchMusicResult) => {
     let lst = [] as Array<SearchMusicResultSingle>;
-    r.list.forEach((v) => {
+    searchMusicResult.list.forEach((v) => {
       if (filterList(v)) lst.push(v);
     });
-    r.list = lst;
-    searchCache.value = r;
+    searchMusicResult.list = lst;
+    searchCache.value = searchMusicResult;
   };
 
   if (platform.value === 'myfreemp3') {
