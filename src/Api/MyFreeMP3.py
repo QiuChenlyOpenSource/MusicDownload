@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - MyFreeMP3.py
-#  @修改时间    : 2023-03-08 12:19:05
-#  @上次修改    : 2023/3/8 下午12:19
+#  @修改时间    : 2023-03-11 02:47:02
+#  @上次修改    : 2023/3/11 下午2:47
 import time
 from typing import Dict
 
@@ -32,7 +32,7 @@ class MyFreeMP3():
         res = res.json()
         if res['code'] != 200:
             res['data'] = {
-                'items': [],
+                'list': [],
                 'total': -1
             }
         _data = res['data']

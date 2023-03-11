@@ -13,7 +13,7 @@ const userStore = () => {
 
 const config = {
     baseURL: "http://localhost:8899",
-    timeout: 1000,
+    timeout: 15000,
     headers: {
         "Content-Type": "multipart/form-data;application/json;charset=UTF-8;",
     },
