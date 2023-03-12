@@ -35,6 +35,7 @@ def subString(text: str, left: str, right: str):
 threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
+
 def fixWindowsFileName2Normal(texts=''):
     """
     修正windows的符号问题
@@ -174,24 +175,17 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         }
 
     # prepare
-    localFile = f"{music['singer']} - {music['title']}.{music['extra']}".replace(
-        "/", "\\")
-    localLrcFile = f"{music['singer']} - {music['title']}.lrc".replace(
-        "/", "\\")
+    localFile = fixWindowsFileName2Normal(f"{music['singer']} - {music['title']}.{music['extra']}")
+    localLrcFile = fixWindowsFileName2Normal(f"{music['singer']} - {music['title']}.lrc")
     mShower = localFile
-    my_path = download_home + music['singer'] + '/'
-
-    # 特殊字符处理
-    music["title"] = fixWindowsFileName2Normal(f'{music["title"]}')
-    music["singer"] = fixWindowsFileName2Normal(f'{music["singer"]}')
-    music["album"] = fixWindowsFileName2Normal(f'{music["album"]}')
+    my_path = download_home + fixWindowsFileName2Normal(music['singer']) + '/'
 
     if not onlyShowSingerSelfSongs:
         if not os.path.exists(my_path):
             os.mkdir(f"{my_path}")
 
     threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
-    my_path = f"{my_path}{music['album'] if musicAlbumsClassification else ''}"
+    my_path = f"{my_path}{fixWindowsFileName2Normal(music['album']) if musicAlbumsClassification else ''}"
 
     try:
         if not os.path.exists(my_path):
