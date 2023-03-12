@@ -7,6 +7,7 @@
 import base64
 import os
 import threading
+import string
 
 import requests
 
@@ -38,7 +39,7 @@ threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件�
 def fixWindowsFileName2Normal(texts=''):
     """
     修正windows的符号问题
-    “?”、“、”、“╲”、“/”、“*”、““”、“”“、“<”、“>”、“|” " " ":"
+    限制规则：https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file （2023/03/13）
 
     参数:
         texts (str, optional): 通常类型字符串. 默认值为 ''.
@@ -46,23 +47,24 @@ def fixWindowsFileName2Normal(texts=''):
     返回值:
         str: 替换字符后的结果
     """
-    targetChars = {
-        '|': ',',
-        '/': ' - ',
-        '╲': ' - ',
-        '、': '·',
-        '“': '"',
-        '”': '"',
-        '*': 'x',
-        '?': '？',  # fix for sample: Justin Bieber - What do you mean ? (Remix)
-        '<': '《',
-        '>': '》',
-        ' ': '',
-    }
-    for suffix in targetChars:
-        fix = targetChars[suffix]
-        texts = texts.replace(suffix, fix)
-    return texts
+    RESTRICT_CHARS = '<>:\"/\\|?*'
+    REPLACE_CHARS = '《》：“、、-？+'
+    REMOVE_CHARS = '\t\n\r\a\b'
+    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',
+                     'com2', 'com3', 'com4', 'com5', 'com6', 'com7',
+                     'com8', 'com9', 'lpt0', 'lpt1', 'lpt2', 'lpt3',
+                     'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9']
+    trans_table = str.maketrans(RESTRICT_CHARS, REPLACE_CHARS, REMOVE_CHARS)
+    texts = texts.translate(trans_table)
+    equal_text = texts.casefold()
+    for restrict_str in RESTRICT_STRS:
+        if equal_text == restrict_str:
+            texts = f'_{texts}_'
+            break
+    return texts.strip()
+
+
+
 
 
 def handleKuwo(mid: str, type: str):
