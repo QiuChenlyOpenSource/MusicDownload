@@ -1,13 +1,12 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
-#  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : 1925374620@qq.com
+#  @作者         : 秋城落叶(QiuChenly), QingXuDw
+#  @邮件         : 1925374620@qq.com, wangjingye55555@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-09 06:01:38
-#  @上次修改    : 2023/3/9 下午6:01
+#  @修改时间    : 2023-03-13 03:10:57
+#  @上次修改    : 2023-03-13 03:10:57
 import base64
 import os
 import threading
-import string
 
 import requests
 
@@ -47,14 +46,16 @@ def fixWindowsFileName2Normal(texts=''):
     返回值:
         str: 替换字符后的结果
     """
-    RESTRICT_CHARS = '<>:\"/\\|?*'
-    REPLACE_CHARS = '《》：“、、-？+'
-    REMOVE_CHARS = '\t\n\r\a\b'
-    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',
+    RESERVED_CHARS = [ord(c) for c in list('<>:\"/\\|?*')]          # Reserved characters in Windows
+    CONTROL_CHARS = list(range(0, 32, 1))                           # Control characters of ascii
+    REP_RESERVED_CHARS = [ord(c) for c in list('《》：“、、-？+')]    # Replace reserved characters in Windows with similar characters
+    # noinspection PyTypeChecker
+    TRANS_DICT = dict(zip(CONTROL_CHARS + RESERVED_CHARS, [None] * 32 + REP_RESERVED_CHARS))
+    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',    # Restricted file names in Windows
                      'com2', 'com3', 'com4', 'com5', 'com6', 'com7',
                      'com8', 'com9', 'lpt0', 'lpt1', 'lpt2', 'lpt3',
                      'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9']
-    trans_table = str.maketrans(RESTRICT_CHARS, REPLACE_CHARS, REMOVE_CHARS)
+    trans_table = str.maketrans(TRANS_DICT)
     texts = texts.translate(trans_table)
     equal_text = texts.casefold()
     for restrict_str in RESTRICT_STRS:
@@ -62,9 +63,6 @@ def fixWindowsFileName2Normal(texts=''):
             texts = f'_{texts}_'
             break
     return texts.strip()
-
-
-
 
 
 def handleKuwo(mid: str, type: str):
