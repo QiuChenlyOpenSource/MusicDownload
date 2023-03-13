@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly), QingXuDw
 #  @邮件         : 1925374620@qq.com, wangjingye55555@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-13 03:10:57
-#  @上次修改    : 2023-03-13 03:10:57
+#  @修改时间    : 2023-03-13 10:00:10
+#  @上次修改    : 2023/3/13 下午10:00
 import base64
 import os
 import threading
@@ -35,7 +35,6 @@ def subString(text: str, left: str, right: str):
 threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
-
 def fixWindowsFileName2Normal(texts=''):
     """
     修正windows的符号问题
@@ -47,12 +46,13 @@ def fixWindowsFileName2Normal(texts=''):
     返回值:
         str: 替换字符后的结果
     """
-    RESERVED_CHARS = [ord(c) for c in list('<>:\"/\\|?*')]          # Reserved characters in Windows
-    CONTROL_CHARS = list(range(0, 32, 1))                           # Control characters of ascii
-    REP_RESERVED_CHARS = [ord(c) for c in list('《》：“、、-？+')]    # Replace reserved characters in Windows with similar characters
+    RESERVED_CHARS = [ord(c) for c in list('<>:\"/\\|?*')]  # Reserved characters in Windows
+    CONTROL_CHARS = list(range(0, 32, 1))  # Control characters of ascii
+    REP_RESERVED_CHARS = [ord(c) for c in
+                          list('《》：“、、-？+')]  # Replace reserved characters in Windows with similar characters
     # noinspection PyTypeChecker
     TRANS_DICT = dict(zip(CONTROL_CHARS + RESERVED_CHARS, [None] * 32 + REP_RESERVED_CHARS))
-    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',    # Restricted file names in Windows
+    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',  # Restricted file names in Windows
                      'com2', 'com3', 'com4', 'com5', 'com6', 'com7',
                      'com8', 'com9', 'lpt0', 'lpt1', 'lpt2', 'lpt3',
                      'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9']
@@ -225,7 +225,9 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
                 'code': 200,
                 'msg': "本地已下载,跳过下载"
             }
-        if os.path.getsize(localFile) == int(music['size']):
+        sz = os.path.getsize(localFile)
+        sz = f"%.2fMB" % (sz / 1024 / 1024)
+        if sz == music['size']:
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
             return {
                 'code': 200,
@@ -233,7 +235,7 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
             }
         else:
             print(
-                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{int(music['size'])},开始覆盖下载 [{mShower}].")
+                f"本地文件尺寸不符: {os.path.getsize(localFile)}/{music['size']},开始覆盖下载 [{mShower}].")
     print(f'正在下载 | {music["album"]} / {musicFileInfo}')
     f = requests.get(link, headers=header)
     with open(localFile, 'wb') as code:

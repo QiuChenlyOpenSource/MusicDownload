@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - EncryptTools.py
-#  @修改时间    : 2023-03-07 10:05:24
-#  @上次修改    : 2023/3/7 下午10:05
+#  @修改时间    : 2023-03-13 09:45:56
+#  @上次修改    : 2023/3/13 下午9:45
 import json
 import random
 import zlib
@@ -107,10 +107,11 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     device = 'MI 14 Pro Max'
     osVersion = '27'
     time = str(int(tm.time()))
+    # f389249d91bd845c9b817db984054cfb 1678713735 6562653262383463363633646364306534333663
     lowerCase = hashMd5("f389249d91bd845c9b817db984054cfb" + time + "6562653262383463363633646364306534333663").lower()
 
     s6 = "{\\\"method\\\":\\\"GetMusicUrl\\\",\\\"platform\\\":\\\"" + platform + "\\\",\\\"t1\\\":\\\"" + t1_MusicID + "\\\",\\\"t2\\\":\\\"" + t2 + "\\\"}"
-    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84c599d711066ef740eb49109dac9782\\\",\\\"appVersion\\\":\\\"4.1.0.V4\\\",\\\"vercode\\\":\\\"4100\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}"
+    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.0.V4\\\",\\\"vercode\\\":\\\"4100\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}"
     s8 = "{\n\t\"text_1\":\t\"" + s6 + "\",\n\t\"text_2\":\t\"" + s7 + "\",\n\t\"sign_1\":\t\"" + lowerCase + "\",\n\t\"time\":\t\"" + time + "\",\n\t\"sign_2\":\t\"" + hashMd5(
         s6.replace("\\", "") + s7.replace("\\", "") + lowerCase + time + "NDRjZGIzNzliNzEx").lower() + "\"\n}"
 
@@ -132,7 +133,7 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
         "http://119.91.134.171:1030/client/cgi-bin/api.fcg",
         "http://106.52.68.150:1030/client/cgi-bin/api.fcg"  # 资源大师接口
     ]
-    url = url[1]
+    url = url[0]
     res = mHttp.getHttp(url, 1, s8)
     try:
         res = zlib.decompress(res.content).decode("utf-8")
