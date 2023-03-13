@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-14 01:10:54
-#  @上次修改    : 2023/3/14 上午1:10
+#  @修改时间    : 2023-03-14 02:32:54
+#  @上次修改    : 2023/3/14 上午2:32
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -190,11 +190,11 @@ def downSingle(music, download_home, config):
     mShower = localFile
     my_path = download_home + fixWindowsFileName2Normal(music['singer']) + '/'
 
-    if not onlyShowSingerSelfSongs:
+    threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
+    if musicAlbumsClassification:
         if not os.path.exists(my_path):
             os.mkdir(f"{my_path}")
 
-    threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
     my_path = f"{my_path}{fixWindowsFileName2Normal(music['album']) if musicAlbumsClassification else ''}"
 
     try:
