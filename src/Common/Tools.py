@@ -1,9 +1,9 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
-#  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : 1925374620@qq.com
+#  @作者         : 秋城落叶(QiuChenly), QingXuDw
+#  @邮件         : 1925374620@qq.com, wangjingye55555@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-09 06:01:38
-#  @上次修改    : 2023/3/9 下午6:01
+#  @修改时间    : 2023-03-13 03:10:57
+#  @上次修改    : 2023-03-13 03:10:57
 import base64
 import os
 import threading
@@ -35,10 +35,11 @@ def subString(text: str, left: str, right: str):
 threadLock = threading.Lock()  # 多线程锁 防止同时创建同一个文件夹冲突
 
 
+
 def fixWindowsFileName2Normal(texts=''):
     """
     修正windows的符号问题
-    “?”、“、”、“╲”、“/”、“*”、““”、“”“、“<”、“>”、“|” " " ":"
+    限制规则：https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file （2023/03/13）
 
     参数:
         texts (str, optional): 通常类型字符串. 默认值为 ''.
@@ -46,23 +47,23 @@ def fixWindowsFileName2Normal(texts=''):
     返回值:
         str: 替换字符后的结果
     """
-    targetChars = {
-        '|': ',',
-        '/': ' - ',
-        '╲': ' - ',
-        '、': '·',
-        '“': '"',
-        '”': '"',
-        '*': 'x',
-        '?': '？',  # fix for sample: Justin Bieber - What do you mean ? (Remix)
-        '<': '《',
-        '>': '》',
-        ' ': '',
-    }
-    for suffix in targetChars:
-        fix = targetChars[suffix]
-        texts = texts.replace(suffix, fix)
-    return texts
+    RESERVED_CHARS = [ord(c) for c in list('<>:\"/\\|?*')]          # Reserved characters in Windows
+    CONTROL_CHARS = list(range(0, 32, 1))                           # Control characters of ascii
+    REP_RESERVED_CHARS = [ord(c) for c in list('《》：“、、-？+')]    # Replace reserved characters in Windows with similar characters
+    # noinspection PyTypeChecker
+    TRANS_DICT = dict(zip(CONTROL_CHARS + RESERVED_CHARS, [None] * 32 + REP_RESERVED_CHARS))
+    RESTRICT_STRS = ['con', 'prn', 'aux', 'nul', 'com0', 'com1',    # Restricted file names in Windows
+                     'com2', 'com3', 'com4', 'com5', 'com6', 'com7',
+                     'com8', 'com9', 'lpt0', 'lpt1', 'lpt2', 'lpt3',
+                     'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9']
+    trans_table = str.maketrans(TRANS_DICT)
+    texts = texts.translate(trans_table)
+    equal_text = texts.casefold()
+    for restrict_str in RESTRICT_STRS:
+        if equal_text == restrict_str:
+            texts = f'_{texts}_'
+            break
+    return texts.strip()
 
 
 def handleKuwo(mid: str, type: str):
@@ -174,24 +175,17 @@ def downSingle(music, platform, download_home, onlyShowSingerSelfSongs=False, mu
         }
 
     # prepare
-    localFile = f"{music['singer']} - {music['title']}.{music['extra']}".replace(
-        "/", "\\")
-    localLrcFile = f"{music['singer']} - {music['title']}.lrc".replace(
-        "/", "\\")
+    localFile = fixWindowsFileName2Normal(f"{music['singer']} - {music['title']}.{music['extra']}")
+    localLrcFile = fixWindowsFileName2Normal(f"{music['singer']} - {music['title']}.lrc")
     mShower = localFile
-    my_path = download_home + music['singer'] + '/'
-
-    # 特殊字符处理
-    music["title"] = fixWindowsFileName2Normal(f'{music["title"]}')
-    music["singer"] = fixWindowsFileName2Normal(f'{music["singer"]}')
-    music["album"] = fixWindowsFileName2Normal(f'{music["album"]}')
+    my_path = download_home + fixWindowsFileName2Normal(music['singer']) + '/'
 
     if not onlyShowSingerSelfSongs:
         if not os.path.exists(my_path):
             os.mkdir(f"{my_path}")
 
     threadLock.acquire()  # 多线程上锁解决同时创建一个mkdir的错误
-    my_path = f"{my_path}{music['album'] if musicAlbumsClassification else ''}"
+    my_path = f"{my_path}{fixWindowsFileName2Normal(music['album']) if musicAlbumsClassification else ''}"
 
     try:
         if not os.path.exists(my_path):
