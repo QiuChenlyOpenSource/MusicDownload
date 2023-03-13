@@ -3,8 +3,8 @@
   - # @作者         : 秋城落叶(QiuChenly)
   - # @邮件         : 1925374620@qq.com
   - # @文件         : 项目 [qqmusic] - SearchMusic.vue
-  - # @修改时间    : 2023-03-14 12:16:38
-  - # @上次修改    : 2023/3/14 上午12:16
+  - # @修改时间    : 2023-03-14 02:14:59
+  - # @上次修改    : 2023/3/14 上午2:14
   -->
 
 <script lang="ts" setup>
@@ -84,17 +84,27 @@ const timeFormat = (row: SearchMusicResultSingle) => {
 }
 
 
+const keys = ['DJ', 'Remix', '即兴', '变调', 'Live', '伴奏', '版,', '版)', '慢四', "纯音乐", '二胡',
+  '串烧', '现场']
+
 /**
  * 检查这首曲子是否不符合过滤标准 true表示曲子可以给用户显示 false反之
  * @param singleMusic
  */
 const filterList = (singleMusic: SearchMusicResultSingle) => {
+  for (let k of keys) {
+    if (singleMusic.title.toUpperCase().includes(k.toUpperCase()))
+      return false;
+  }
   if (basicStore.config.ignoreNoAlbumSongs) {
-    return singleMusic.album !== "未分类专辑" && singleMusic.album !== "";
+    if (singleMusic.album == "未分类专辑" || singleMusic.album == "")
+      return false;
   }
   if (basicStore.config.onlyMatchSearchKey) {
     let artist = getMusicSinger(singleMusic)
-    return artist.indexOf(basicStore.lastSearch) !== -1;
+    // console.log("歌手", artist, "搜索的", basicStore.lastSearch)
+    if (!artist.includes(basicStore.lastSearch))
+      return false;
   }
   return true;
 };
