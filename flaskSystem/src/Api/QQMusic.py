@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-03-14 03:01:55
+#  @上次修改    : 2023/3/14 下午3:01
 
 import json
 import uuid
@@ -34,7 +34,7 @@ class QQMusicApi(BaseApi):
             "Cookie": self.getCookie(),
         }
 
-    def getQQServersCallback(self, url: str, method: int = 0, data={}):
+    def getQQServersCallback(self, url: str, method: int = 0, data: dict = {}):
         """重新设计了Http接口
 
         参数:
@@ -157,6 +157,82 @@ class QQMusicApi(BaseApi):
         d = d.text  # MusicJsonCallback(...)
         d = d[18:-1]
         return json.loads(d)
+
+    @staticmethod
+    def getUUID():
+        return uuid.uuid1().__str__()
+
+    def parseQQMusicPlaylist(self, playID: str):
+        """
+        从客户端获取歌单列表
+        参数:
+            playID: 歌单id
+
+        返回:
+
+        """
+        _uuid = self.getUUID()
+        u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        payload = {
+            "getMusicPlaylist": {
+                "module": "music.srfDissInfo.aiDissInfo",
+                "method": "uniform_get_Dissinfo",
+                "param": {
+                    "disstid": int(playID),
+                    "userinfo": 1,
+                    "tag": 1,
+                    "is_pc": 1,
+                    "guid": _uuid
+                }
+            },
+            "comm": {
+                "g_tk": 0,
+                "uin": "",
+                "format": "json",
+                "ct": 6,
+                "cv": 80600,
+                "platform": "wk_v17",
+                "uid": "",
+                "guid": _uuid
+            }
+        }
+        r = self.getQQServersCallback(u, 1, payload)
+        r = r.json()
+        playlist = r['getMusicPlaylist']
+        if playlist['code'] == 0:
+            lst = playlist['data']['songlist']
+        else:
+            lst = []
+        # 数据清洗,去掉搜索结果中多余的数据
+        list_clear = []
+        for i in lst:
+            list_clear.append({
+                'album': i['album'],
+                'docid': '无',
+                'id': i['id'],
+                'mid': i['mid'],
+                'name': i['title'],
+                'singer': i['singer'],
+                'time_public': i['time_public'],
+                'title': i['title'],
+                'file': i['file'],
+            })
+        # rebuild json
+        # list_clear: 搜索出来的歌曲列表
+        # {
+        #   size 搜索结果总数
+        #   next 下一搜索页码 -1表示搜索结果已经到底
+        #   cur  当前搜索结果页码
+        # }
+        return {
+            'data': list_clear,
+            'page': {
+                'size': len(list_clear),
+                'next': "1",
+                'cur': "1",
+                'searchKey': ""
+            }
+        }
 
     def getQQMusicDownloadLinkV1(self, filename, songmid):
         url = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
@@ -475,3 +551,127 @@ class QQMusicApi(BaseApi):
             })
         # 这部分其实可以只返回songs 但是代码我懒得改了 反正又不是不能用=v=
         return songs
+
+    def parseQQMusicAlbum(self, _id: str):
+        """
+        从客户端接口获取专辑列表
+        参数:
+            _id: 专辑ID
+
+        返回专辑列表:
+
+        """
+        _uuid = self.getUUID()
+        u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        payload = {
+            "AlbumSongList": {
+                "module": "music.musichallAlbum.AlbumSongList",
+                "method": "GetAlbumSongList",
+                "param": {
+                    "albumMid": _id,
+                    "begin": 0,
+                    "num": 60,
+                    "order": 2
+                }
+            },
+            "comm": {
+                "g_tk": 0,
+                "uin": "",
+                "format": "json",
+                "ct": 6,
+                "cv": 80600,
+                "platform": "wk_v17",
+                "uid": "",
+                "guid": _uuid
+            }
+        }
+        r = self.getQQServersCallback(u, 1, payload)
+        r = r.json()
+        playlist = r['AlbumSongList']
+        if playlist['code'] == 0:
+            lst = playlist['data']['songList']
+        else:
+            lst = []
+        # 数据清洗,去掉搜索结果中多余的数据
+        list_clear = []
+        for i in lst:
+            i = i['songInfo']
+            list_clear.append({
+                'album': i['album'],
+                'docid': '无',
+                'id': i['id'],
+                'mid': i['mid'],
+                'name': i['title'],
+                'singer': i['singer'],
+                'time_public': i['time_public'],
+                'title': i['title'],
+                'file': i['file'],
+            })
+        # rebuild json
+        # list_clear: 搜索出来的歌曲列表
+        # {
+        #   size 搜索结果总数
+        #   next 下一搜索页码 -1表示搜索结果已经到底
+        #   cur  当前搜索结果页码
+        # }
+        return {
+            'data': list_clear,
+            'page': {
+                'size': len(list_clear),
+                'next': "1",
+                'cur': "1",
+                'searchKey': ""
+            }
+        }
+
+    def getSingleMusicInfo(self, _id: str):
+        """
+        获取单曲歌曲信息
+        参数:
+            _id: https://y.qq.com/n/ryqq/songDetail/0042QMDR1VzSsx 里面的 0042QMDR1VzSsx
+
+        返回:
+
+        """
+        u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+        d = {"get_song_detail": {"module": "music.pf_song_detail_svr", "method": "get_song_detail",
+                                 "param": {"song_id": None, "song_mid": _id, "song_type": 0}},
+             "comm": {"g_tk": 0, "uin": "", "format": "json", "ct": 6, "cv": 80600,
+                      "platform": "wk_v17", "uid": "", "guid": self.getUUID()}}
+
+        r = self.getQQServersCallback(u, 1, d)
+        r = r.json()
+        # print(r)
+        get_song_detail = r['get_song_detail']
+        if get_song_detail['code'] == 0:
+            i = get_song_detail['data']['track_info']
+            lst = [{
+                'album': i['album'],
+                'docid': '无',
+                'id': i['id'],
+                'mid': i['mid'],
+                'name': i['title'],
+                'singer': i['singer'],
+                'time_public': i['time_public'],
+                'title': i['title'],
+                'file': i['file'],
+            }]
+        else:
+            lst = []
+        # 数据清洗,去掉搜索结果中多余的数据
+        # rebuild json
+        # list_clear: 搜索出来的歌曲列表
+        # {
+        #   size 搜索结果总数
+        #   next 下一搜索页码 -1表示搜索结果已经到底
+        #   cur  当前搜索结果页码
+        # }
+        return {
+            'data': lst,
+            'page': {
+                'size': len(lst),
+                'next': "1",
+                'cur': "1",
+                'searchKey': ""
+            }
+        }
