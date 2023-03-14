@@ -3,8 +3,8 @@
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - vite.config.ts
- * # @修改时间    : 2023-03-13 11:09:43
- * # @上次修改    : 2023/3/13 下午11:09
+ * # @修改时间    : 2023-03-15 03:50:51
+ * # @上次修改    : 2023/3/15 上午3:50
  */
 
 import {BuildOptions, defineConfig} from "vite";
@@ -50,7 +50,11 @@ export default defineConfig({
         Components({
             resolvers: [IconsResolver()],
         }),
-        Icons({compiler: "vue3"}),
+
+        Icons({
+            compiler: "vue3",
+            autoInstall: true,
+        }),
         Inspect(),
         // viteCompression({
         //     verbose: true,

@@ -3,8 +3,8 @@
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - NetEasePlayListSong.ts
- * # @修改时间    : 2023-03-14 12:28:16
- * # @上次修改    : 2023/3/14 上午12:28
+ * # @修改时间    : 2023-03-15 03:40:41
+ * # @上次修改    : 2023/3/15 上午3:40
  */
 
 export interface NeteasePlayListSongs {
@@ -19,6 +19,9 @@ export interface NeteasePlayListSongsList {
     mid: number
     title: string
     publishTime: number
+
+    docid: number
+    cloud: boolean
 }
 
 export interface Album {

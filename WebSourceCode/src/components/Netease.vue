@@ -3,8 +3,8 @@
   - # @作者         : 秋城落叶(QiuChenly)
   - # @邮件         : 1925374620@qq.com
   - # @文件         : 项目 [qqmusic] - Netease.vue
-  - # @修改时间    : 2023-03-14 12:27:54
-  - # @上次修改    : 2023/3/14 上午12:27
+  - # @修改时间    : 2023-03-15 03:50:15
+  - # @上次修改    : 2023/3/15 上午3:50
   -->
 
 <script lang="ts" setup>
@@ -17,6 +17,7 @@ import {NeteasePlayListSongsList} from "@/utils/type/NetEasePlayListSong";
 import {timestampToTime} from "@/utils/Utils";
 import {MusicPlayList2List} from "@/utils/type/NeteaseMusicPlayList";
 import {ElNotification} from "element-plus";
+import MdiCloudCheckOutline from '~icons/mdi/cloud-check-outline'
 
 const {basicStore} = SystemStore()
 const user = ref2(basicStore)
@@ -166,6 +167,28 @@ const loadUserPlaylist = (currentSelectItemIndex: number) => {
   }
   page_change(1)
 }
+
+const getFeeType = (row: NeteasePlayListSongsList) => {
+  let tip = '未知'
+  switch (row.docid) {
+    case 0:
+      tip = '免费播放'
+      break
+    case 1:
+      tip = 'VIP播放'
+      break
+    case 4:
+      tip = '购买专辑'
+      break
+    case 8:
+      tip = '低音质免费'
+      break
+    default:
+      tip = '未知:' + row.docid
+      break
+  }
+  return tip
+}
 </script>
 
 <template>
@@ -224,10 +247,35 @@ const loadUserPlaylist = (currentSelectItemIndex: number) => {
             />
             <el-table-column
                 :show-overflow-tooltip="true"
+                prop="docid"
+                label="版权"
+                width="100"
+            >
+              <template #default="scope">
+                <div class="title-tip">
+                  <div class="fee-tip"
+                       :class="{
+                          'vip-tip': scope.row.docid === 1 || scope.row.docid === 4
+                       }"
+                  >{{ getFeeType(scope.row) }}
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column
+                :show-overflow-tooltip="true"
                 prop="title"
                 label="歌曲名"
                 min-width="300"
-            />
+            >
+              <template #default="scope">
+                <div class="title-tip">
+                  <div class="flac-tip" v-if="scope.row.extra === 'flac'">无损</div>
+                  <div class="name">{{ scope.row.title }}</div>
+                  <MdiCloudCheckOutline v-if="scope.row.cloud" style="margin-left: 10px;"/>
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column
                 :show-overflow-tooltip="true"
                 :formatter="(row:NeteasePlayListSongsList) => {
@@ -281,6 +329,40 @@ const loadUserPlaylist = (currentSelectItemIndex: number) => {
   padding-top: 10px;
   font-size: 2.5em;
   font-weight: bolder;
+}
+
+.title-tip {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .name {
+  }
+
+  .flac-tip {
+    font-size: 12px;
+    color: #ffb703;
+    border: #ffb703 1px solid;
+    line-height: normal;
+    margin-right: 8px;
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+
+  .fee-tip {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    border: rgba(255, 255, 255, 0.4) 1px solid;
+    line-height: normal;
+    margin-right: 8px;
+    padding: 0 4px;
+    border-radius: 4px;
+  }
+
+  .vip-tip {
+    color: #e5202b;
+    border: #e5202b 1px solid;
+  }
 }
 
 .login {

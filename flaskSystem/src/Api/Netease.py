@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-14 10:37:39
-#  @上次修改    : 2023/3/14 下午10:37
+#  @修改时间    : 2023-03-15 03:22:44
+#  @上次修改    : 2023/3/15 上午3:22
 import json
 import os
 import time
@@ -77,6 +77,19 @@ class Netease(BaseApi):
     def getAllMusicCloud(self, size=30):
         u = f'/user/cloud?limit={size}&time={time.time_ns()}'
         res = self.http(u).json()
+        # fee: enum,
+        #   0: 免费或无版权
+        #   1: VIP 歌曲
+        #   4: 购买专辑
+        #   8: 非会员可免费播放低音质，会员可播放高音质及下载
+        #   fee 为 1 或 8 的歌曲均可单独购买 2 元单曲
+        # t: enum,
+        #   0: 一般类型
+        #   1: 通过云盘上传的音乐，网易云不存在公开对应
+        #     如果没有权限将不可用，除了歌曲长度以外大部分信息都为null。
+        #     网页端打开会看到404画面。
+        #   2: 通过云盘上传的音乐，网易云存在公开对应
+        #     如果没有权限则只能看到信息，但无法直接获取到文件。
         if res['code'] == 200:
             return {
                 'list': res['data'],
@@ -158,7 +171,11 @@ class Netease(BaseApi):
                 'author_simple': li['ar'][0]['name'],  # li['ar'][0]['name'] if len(li['ar']) == 1 else
                 "author": li['ar'],  # 数组[{'id': 472822, 'name': 'JJD', 'tns': [], 'alias': []}]
                 'publishTime': li['publishTime'],
-                'album': li['al']['name']
+                'album': li['al']['name'],
+                'docid': li['fee'],
+                # 是否为云盘歌曲
+                'cloud': False if li.get('pc') is None else True,
+                'extra': 'flac' if li['sq'] is not None or li['hr'] is not None else 'mp3'
             } for li in js['songs']
         ]
 
