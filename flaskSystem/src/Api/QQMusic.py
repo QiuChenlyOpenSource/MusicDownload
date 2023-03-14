@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-14 03:01:55
-#  @上次修改    : 2023/3/14 下午3:01
+#  @修改时间    : 2023-03-14 03:40:11
+#  @上次修改    : 2023/3/14 下午3:40
 
 import json
 import uuid
@@ -627,15 +627,27 @@ class QQMusicApi(BaseApi):
     def getSingleMusicInfo(self, _id: str):
         """
         获取单曲歌曲信息
+
         参数:
-            _id: https://y.qq.com/n/ryqq/songDetail/0042QMDR1VzSsx 里面的 0042QMDR1VzSsx
+            _id: https://y.qq.com/n/ryqq/songDetail/0042QMDR1VzSsx 里面的 0042QMDR1VzSsx\n
+            https://y.qq.com/n/ryqq/songDetail/374229667?songtype=0 里面的 374229667
 
         返回:
 
         """
         u = 'https://u.y.qq.com/cgi-bin/musicu.fcg'
+
+        # 这里有两种格式 一种是纯数字 一种是mid 所以判断是否可被int即可
+
+        try:
+            sid = int(_id)
+            mid = 0
+        except Exception as e:
+            sid = 0
+            mid = _id
+
         d = {"get_song_detail": {"module": "music.pf_song_detail_svr", "method": "get_song_detail",
-                                 "param": {"song_id": None, "song_mid": _id, "song_type": 0}},
+                                 "param": {"song_id": sid, "song_mid": mid, "song_type": 0}},
              "comm": {"g_tk": 0, "uin": "", "format": "json", "ct": 6, "cv": 80600,
                       "platform": "wk_v17", "uid": "", "guid": self.getUUID()}}
 
