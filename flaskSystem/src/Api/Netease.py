@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-03-14 10:37:39
+#  @上次修改    : 2023/3/14 下午10:37
 import json
 import os
 import time
@@ -55,7 +55,7 @@ class Netease(BaseApi):
 
         """
         # TODO 需要测试此处代码
-        u = '/cloud'
+        u = f'/cloud?time={time.time_ns()}'
         name = os.path.basename(fileLocate)
         with open(fileLocate, "rb") as conf:
             upFile = {
@@ -67,9 +67,27 @@ class Netease(BaseApi):
         res = res.json()
         print(res)
 
-    def getUserDetail(self):
-        u = '/user/account'
-        return self.http(u).json()
+    def matchMusicSid2ASid(self, data: dict):
+        u = f'/cloud/match?uid={data["uid"]}&sid={data["sid"]}&asid={data["asid"]}&time={time.time_ns()}'
+        res = self.http(u).json()
+        print(res)
+        # {'code': 400, 'message': '纠错后的文件已在云盘存在', 'data': False}
+        return res
+
+    def getAllMusicCloud(self, size=30):
+        u = f'/user/cloud?limit={size}&time={time.time_ns()}'
+        res = self.http(u).json()
+        if res['code'] == 200:
+            return {
+                'list': res['data'],
+                'count': res['count'],
+                'hasMore': res['hasMore']
+            }
+        return {
+            'list': [],
+            'count': 0,
+            'hasMore': False
+        }
 
     def getUserDetail(self):
         u = '/user/account'

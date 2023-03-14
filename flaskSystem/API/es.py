@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - es.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-03-14 10:40:06
+#  @上次修改    : 2023/3/14 下午10:40
 from flask import request
 from flaskSystem.src.Api.Netease import Netease
 from flaskSystem.App import app
@@ -44,6 +44,19 @@ def setCookie():
 @app.get("/es/getUserInfo")
 def getUserInfo():
     state = netes.getUserDetail()
+    return state
+
+
+@app.get("/es/getCloud")
+def getCloud():
+    state = netes.getAllMusicCloud(1000)
+    return state
+
+
+@app.post("/es/bindSid2Asid")
+def bindSid2Asid():
+    data = request.get_json()
+    state = netes.matchMusicSid2ASid(data)
     return state
 
 

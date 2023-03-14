@@ -3,16 +3,16 @@
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - Http.ts
- * # @修改时间    : 2023-03-14 02:16:33
- * # @上次修改    : 2023/3/14 上午2:16
+ * # @修改时间    : 2023-03-15 12:28:57
+ * # @上次修改    : 2023/3/15 上午12:28
  */
 
-import {MD5} from "crypto-js";
-import axios, {AxiosHeaders, AxiosRequestHeaders, AxiosResponse} from "axios";
+import axios, {AxiosResponse} from "axios";
 import {InitAnonimous, SearchMusicResult, SearchMusicResultSingle} from "@/utils/type/BasicType";
 import {NetEaseUserInfo} from "@/utils/type/UserInfoDetail";
 import {MusicPlaylist} from "@/utils/type/NeteaseMusicPlayList";
 import {NeteasePlayListSongs} from "@/utils/type/NetEasePlayListSong";
+import {CloudResponse, List as mList} from "@/utils/type/CloudResponse";
 
 const userStore = () => {
     return {
@@ -155,5 +155,12 @@ export const Api = {
     }>("/es/setCookie", data),
     initAnonimous: () => Api.get<InitAnonimous>("/es/initAnonimous"),
     getUserPlaylist: (userid: string) => Api.get<MusicPlaylist>("/es/getUserPlaylist/" + userid),
-    getMusicListByPlaylistID: (playListID: string, page: number, size: number) => Api.get<NeteasePlayListSongs>(`/es/getMusicListByPlaylistID/${playListID}/${page}/${size}`)
+    getMusicListByPlaylistID: (playListID: string, page: number, size: number) => Api.get<NeteasePlayListSongs>(`/es/getMusicListByPlaylistID/${playListID}/${page}/${size}`),
+    getNeteaseCloud: () => Api.get<CloudResponse>(`/es/getCloud`),
+    delNeteaseCloud: () => Api.get<CloudResponse>(`/es/getCloud`),
+    bindSid2Asid: (data: {
+        sid: number,
+        asid: number,
+        uid: number
+    }) => Api.post<{ 'message': string, 'code': number }>(`/es/bindSid2Asid`, data),
 };

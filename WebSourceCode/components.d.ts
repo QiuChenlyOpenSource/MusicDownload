@@ -9,6 +9,7 @@ export {}
 
 declare module '@vue/runtime-core' {
   export interface GlobalComponents {
+    Cloud: typeof import('./src/components/Cloud.vue')['default']
     Download: typeof import('./src/components/Download.vue')['default']
     Home: typeof import('./src/components/Home.vue')['default']
     ICarbonCloudDataOps: typeof import('~icons/carbon/cloud-data-ops')['default']

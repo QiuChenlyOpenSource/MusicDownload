@@ -1,3 +1,12 @@
+<!--
+  - # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
+  - # @作者         : 秋城落叶(QiuChenly)
+  - # @邮件         : 1925374620@qq.com
+  - # @文件         : 项目 [qqmusic] - Index.vue
+  - # @修改时间    : 2023-03-14 08:23:20
+  - # @上次修改    : 2023/3/14 下午8:23
+  -->
+
 <template>
   <div class="content">
     <div class="left-banner">
@@ -14,6 +23,10 @@
         <div class="home-page" @click="router.push('/netease')">
           <i-carbon-cloud-data-ops/>
           <span>网易云登录</span>
+        </div>
+        <div class="home-page" @click="router.push('/cloud')">
+          <i-carbon-cloud-data-ops/>
+          <span>网易云云盘</span>
         </div>
         <div class="home-page" @click="router.push('/download')">
           <i-carbon-download/>
