@@ -3,8 +3,8 @@
   - # @作者         : 秋城落叶(QiuChenly)
   - # @邮件         : 1925374620@qq.com
   - # @文件         : 项目 [qqmusic] - SearchMusic.vue
-  - # @修改时间    : 2023-03-14 02:14:59
-  - # @上次修改    : 2023/3/14 上午2:14
+  - # @修改时间    : 2023-03-20 01:45:59
+  - # @上次修改    : 2023/3/20 上午1:45
   -->
 
 <script lang="ts" setup>
@@ -44,6 +44,10 @@ const apiList = ref([
     value: 'myfreemp3'
   },
 ])
+
+const searchByNetease = defineProps<{
+  search: string | undefined
+}>()
 
 watch(refbasicStore.lastSearch, (now, old) => {
   if (now.length === 0) {
@@ -158,6 +162,11 @@ const paddingHeadHeight = ref(0);
 onMounted(() => {
   const h = headRef.value as HTMLDivElement;
   paddingHeadHeight.value = h.offsetTop + h.offsetHeight;
+  console.log('searchByNetease', searchByNetease)
+  if (searchByNetease.search !== undefined) {
+    basicStore.lastSearch = searchByNetease.search
+    search()
+  }
 });
 
 function parseParams(data: any) {

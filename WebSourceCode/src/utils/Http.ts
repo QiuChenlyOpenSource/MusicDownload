@@ -1,10 +1,10 @@
 /*
- * # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
+ * # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved 
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - Http.ts
- * # @修改时间    : 2023-03-15 03:49:37
- * # @上次修改    : 2023/3/15 上午3:49
+ * # @修改时间    : 2023-03-20 02:05:20
+ * # @上次修改    : 2023/3/20 上午2:05
  */
 
 import axios, {AxiosResponse} from "axios";
@@ -156,11 +156,14 @@ export const Api = {
     initAnonimous: () => Api.get<InitAnonimous>("/es/initAnonimous"),
     getUserPlaylist: (userid: string) => Api.get<MusicPlaylist>("/es/getUserPlaylist/" + userid),
     getMusicListByPlaylistID: (playListID: string, page: number, size: number) => Api.get<NeteasePlayListSongs>(`/es/getMusicListByPlaylistID/${playListID}/${page}/${size}`),
-    getNeteaseCloud: () => Api.get<CloudResponse>(`/es/getCloud`),
+    getNeteaseCloud: () => Api.get<CloudResponse>(`/es/getCloud?${Date.now()}`),
     delNeteaseCloud: () => Api.get<CloudResponse>(`/es/getCloud`),
     bindSid2Asid: (data: {
         sid: number,
         asid: number,
         uid: number
     }) => Api.post<{ 'message': string, 'code': number }>(`/es/bindSid2Asid`, data),
+    esLogout() {
+        return Api.get("/es/esLogout")
+    }
 };

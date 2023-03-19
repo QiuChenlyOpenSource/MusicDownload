@@ -1,10 +1,10 @@
 <!--
-  - # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
+  - # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved 
   - # @作者         : 秋城落叶(QiuChenly)
   - # @邮件         : 1925374620@qq.com
   - # @文件         : 项目 [qqmusic] - Netease.vue
-  - # @修改时间    : 2023-03-15 03:50:15
-  - # @上次修改    : 2023/3/15 上午3:50
+  - # @修改时间    : 2023-03-20 02:02:55
+  - # @上次修改    : 2023/3/20 上午2:02
   -->
 
 <script lang="ts" setup>
@@ -13,11 +13,12 @@ import {ref2, SystemStore} from "@/store/SystemStore";
 import {Api} from "@/utils/Http";
 import QrcodeVue from 'qrcode.vue';
 import UserInfo from "@/component/UserInfo.vue";
-import {NeteasePlayListSongsList} from "@/utils/type/NetEasePlayListSong";
+import {NeteasePlayListSongsList, Privileges} from "@/utils/type/NetEasePlayListSong";
 import {timestampToTime} from "@/utils/Utils";
 import {MusicPlayList2List} from "@/utils/type/NeteaseMusicPlayList";
 import {ElNotification} from "element-plus";
 import MdiCloudCheckOutline from '~icons/mdi/cloud-check-outline'
+import SearchMusic from "@/components/SearchMusic.vue";
 
 const {basicStore} = SystemStore()
 const user = ref2(basicStore)
@@ -60,7 +61,7 @@ const UserFunction = {
           tips.value = "登录成功"
           basicStore.netease.isLogin = true
           basicStore.netease.token = res.cookie
-          this.getUserInfo();
+          this.getUserInfo().then(r => UserFunction.fetchUserPlaylist());
           break;
       }
     }, 2000)
@@ -152,6 +153,16 @@ const handleDown = (music: NeteasePlayListSongsList) => {
   })
 }
 
+const logout = () => {
+  Api.esLogout().then(r => {
+    basicStore.netease.isLogin = false
+    basicStore.netease.token = ''
+    UserFunction.initAnonimous().then(r => {
+      UserFunction.switchLoginQRCode()
+    })
+  })
+}
+
 const mPlaylistDropdown = ref<Array<{
   value: MusicPlayList2List,
   label: string,
@@ -170,29 +181,83 @@ const loadUserPlaylist = (currentSelectItemIndex: number) => {
 
 const getFeeType = (row: NeteasePlayListSongsList) => {
   let tip = '未知'
-  switch (row.docid) {
+  let res = tb6V(row.privileges)
+  if (res === 100) return "暂无版权"
+  switch (row.fee) {
     case 0:
-      tip = '免费播放'
+      tip = '免费歌曲'
       break
     case 1:
-      tip = 'VIP播放'
+      tip = '会员播放'
       break
     case 4:
       tip = '购买专辑'
       break
     case 8:
-      tip = '低音质免费'
+      tip = '会员下载'
       break
     default:
-      tip = '未知:' + row.docid
+      tip = '未知类型' + row.fee
       break
   }
   return tip
+}
+
+/**
+ * 好像是检查是否为灰色歌曲的 逆向出来的函数
+ * @param eD1x
+ * @param action
+ */
+const tb6V = function (eD1x: Privileges, action: string = '') {
+  if (eD1x) {
+    if (action === "download") {
+      return 0
+    }
+    if (eD1x.pl <= 0 && (eD1x.fee > 63 || eD1x.flag > 4095)) {
+      return 1e4
+    }
+    if (action == "download" && eD1x.dl <= 0 && (eD1x.fee > 63 || eD1x.flag > 4095)) {
+      return 10001
+    }
+    if (eD1x.st != null && eD1x.st < 0) {
+      return 100 //由于版权保护，您所在的地区暂时无法使用。
+    }
+    if (eD1x.fee > 0 && eD1x.fee !== 8 && eD1x.payed === 0 && eD1x.pl <= 0)
+      return 10;//唱片公司要求，当前歌曲须付费使用。
+    if (eD1x.fee === 16 || eD1x.fee === 4 && eD1x.flag & 2048)
+      return 11;//版权方要求，该歌曲须下载后播放
+    if ((eD1x.fee === 0 || eD1x.payed) && eD1x.pl > 0 && eD1x.dl === 0)
+      return 1e3;
+    if (eD1x.pl === 0 && eD1x.dl === 0)
+      return 100;//由于版权保护，您所在的地区暂时无法使用。
+    return 0
+  } else {
+    // var eG1x = bi0x.status != null ? bi0x.status : bi0x.st != null ? bi0x.st : 0;
+    // if (bi0x.status >= 0)
+    //   return 0;
+    // if (bi0x.fee > 0)
+    //   return 10;
+    // return 100
+    return -1
+  }
+}
+
+const matchMusic = ref(false)
+const waitMatchMusic = ref<NeteasePlayListSongsList>({} as NeteasePlayListSongsList)
+const willSearchString = ref('')
+const handleMatch = (song: NeteasePlayListSongsList) => {
+  waitMatchMusic.value = song;
+  matchMusic.value = true;
+  willSearchString.value = song.author_simple + " " + song.title + " " + song.album
 }
 </script>
 
 <template>
   <div class="content">
+    <el-dialog class="dialog-attr" align-center width="90%" v-model="matchMusic"
+               :title="'查找歌曲 - ' + waitMatchMusic.title">
+      <search-music :search="willSearchString"/>
+    </el-dialog>
     <div ref="head" class="head">网易云 - {{
         user.netease.value.isLogin ? user.netease.value.user.profile.nickname : "请登录"
       }}
@@ -230,6 +295,7 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
           <span class="search-hint">结果列表[搜索到{{ totalSize }}条数据,当前第{{
               page
             }}页]</span>
+          <div @click="logout">退出登录</div>
           <el-table
               class="my-tb"
               :data="userPlaylistFetch"
@@ -255,7 +321,9 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
                 <div class="title-tip">
                   <div class="fee-tip"
                        :class="{
-                          'vip-tip': scope.row.docid === 1 || scope.row.docid === 4
+                          'vip-tip': scope.row.fee === 1 || scope.row.fee === 4,
+                          'no-ip-tip': tb6V(scope.row.privileges) === 100,
+                          'vip-down': scope.row.fee === 8,
                        }"
                   >{{ getFeeType(scope.row) }}
                   </div>
@@ -291,10 +359,15 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
                 label="专辑"
                 width="200"
             />
-            <el-table-column fixed="right" label="操作" width="120">
+            <el-table-column fixed="right" label="操作">
               <template #default="scope">
-                <el-button link type="primary" size="small" @click="handleDown(scope.row)"
+                <el-button :type="tb6V(scope.row.privileges) === 100 ? 'info' : 'primary'" size="small"
+                           @click="tb6V(scope.row.privileges) === 100 ? null : handleDown(scope.row)"
                 >下载
+                </el-button>
+                <el-button v-if="tb6V(scope.row.privileges) === 100" type="warning" size="small"
+                           @click="handleMatch(scope.row)"
+                >在线匹配
                 </el-button>
                 <!--                <el-button link type="primary" size="small">试听</el-button>-->
               </template>
@@ -350,18 +423,26 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
   }
 
   .fee-tip {
+    padding: 4px 10px;
+    color: #fff;
+    background-color: #a480cf;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.4);
-    border: rgba(255, 255, 255, 0.4) 1px solid;
     line-height: normal;
     margin-right: 8px;
-    padding: 0 4px;
     border-radius: 4px;
+    font-weight: bolder;
+  }
+
+  .vip-down {
+    background-color: #788bff;
   }
 
   .vip-tip {
-    color: #e5202b;
-    border: #e5202b 1px solid;
+    background-color: #d00000;
+  }
+
+  .no-ip-tip {
+    background-color: #a9aca9;
   }
 }
 
@@ -387,7 +468,7 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
 
     .search-hint {
       font-size: 14px;
-      color: var(--qiuchen-normal-white);
+      color: var(--qiuchen-normal-black);
       margin: 10px 0 0 10px;
     }
 
@@ -401,6 +482,15 @@ const getFeeType = (row: NeteasePlayListSongsList) => {
 
 .no-login {
 
+}
+
+.dialog-attr {
+  height: 80vh;
+  overflow: hidden;
+
+  :deep(.el-dialog__body) {
+    padding: 0 !important;
+  }
 }
 
 .select-list {

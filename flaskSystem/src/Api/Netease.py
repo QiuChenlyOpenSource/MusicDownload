@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-15 03:22:44
-#  @上次修改    : 2023/3/15 上午3:22
+#  @修改时间    : 2023-03-20 12:44:59
+#  @上次修改    : 2023/3/20 上午12:44
 import json
 import os
 import time
@@ -75,8 +75,9 @@ class Netease(BaseApi):
         return res
 
     def getAllMusicCloud(self, size=30):
-        u = f'/user/cloud?limit={size}&time={time.time_ns()}'
-        res = self.http(u).json()
+        u = f'/user/cloud?limit={size}&timestamp={time.time_ns()}'
+        r = self.http(u)
+        res = r.json()
         # fee: enum,
         #   0: 免费或无版权
         #   1: VIP 歌曲
@@ -101,6 +102,10 @@ class Netease(BaseApi):
             'count': 0,
             'hasMore': False
         }
+
+    def logoutUser(self):
+        u = '/logout'
+        return self.http(u).json()
 
     def getUserDetail(self):
         u = '/user/account'
@@ -162,22 +167,32 @@ class Netease(BaseApi):
         if res.text.find(":400}") != -1:
             return []
         js = res.json()
-        if js['code'] == 20001:
+        privileges = js['privileges']
+        songs = js['songs']
+        code = js['code']
+        if code == 20001:
             return -1
-        return [
-            {
-                "title": li['name'],
-                "mid": li['id'],
-                'author_simple': li['ar'][0]['name'],  # li['ar'][0]['name'] if len(li['ar']) == 1 else
-                "author": li['ar'],  # 数组[{'id': 472822, 'name': 'JJD', 'tns': [], 'alias': []}]
-                'publishTime': li['publishTime'],
-                'album': li['al']['name'],
-                'docid': li['fee'],
+
+        lst = []
+        inx = 0
+        for song in songs:
+            lst.append({
+                "title": song['name'],
+                "mid": song['id'],
+                'author_simple': song['ar'][0]['name'],  # li['ar'][0]['name'] if len(li['ar']) == 1 else
+                "author": song['ar'],  # 数组[{'id': 472822, 'name': 'JJD', 'tns': [], 'alias': []}]
+                'publishTime': song['publishTime'],
+                'album': song['al']['name'],
+                'fee': song['fee'],
+                'copyright': song['copyright'],
                 # 是否为云盘歌曲
-                'cloud': False if li.get('pc') is None else True,
-                'extra': 'flac' if li['sq'] is not None or li['hr'] is not None else 'mp3'
-            } for li in js['songs']
-        ]
+                'cloud': False if song.get('pc') is None else True,
+                'extra': 'flac' if song['sq'] is not None or song['hr'] is not None else 'mp3',
+                'privileges': privileges[inx]
+            })
+            inx += 1
+
+        return lst
 
     def anonimousLogin(self):
         u = "/register/anonimous" + f"?time={time.time_ns()}"

@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - es.py
-#  @修改时间    : 2023-03-14 10:40:06
-#  @上次修改    : 2023/3/14 下午10:40
+#  @修改时间    : 2023-03-15 04:38:40
+#  @上次修改    : 2023/3/15 上午4:38
 from flask import request
 from flaskSystem.src.Api.Netease import Netease
 from flaskSystem.App import app
@@ -50,6 +50,12 @@ def getUserInfo():
 @app.get("/es/getCloud")
 def getCloud():
     state = netes.getAllMusicCloud(1000)
+    return state
+
+
+@app.get("/es/esLogout")
+def logout():
+    state = netes.logoutUser()
     return state
 
 

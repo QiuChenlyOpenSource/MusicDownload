@@ -1,10 +1,10 @@
 /*
- * # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
+ * # Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved 
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - NetEasePlayListSong.ts
- * # @修改时间    : 2023-03-15 03:40:41
- * # @上次修改    : 2023/3/15 上午3:40
+ * # @修改时间    : 2023-03-20 01:47:11
+ * # @上次修改    : 2023/3/20 上午1:47
  */
 
 export interface NeteasePlayListSongs {
@@ -13,24 +13,61 @@ export interface NeteasePlayListSongs {
 }
 
 export interface NeteasePlayListSongsList {
-    album: Album
+    album: string
     author: Author[]
     author_simple: string
     mid: number
     title: string
     publishTime: number
 
-    docid: number
+    fee: number
     cloud: boolean
+
+    copyright: number
+
+    privileges: Privileges
 }
 
-export interface Album {
+export interface Privileges {
+    chargeInfoList: ChargeInfoList[]
+    cp: number
+    cs: boolean
+    dl: number
+    dlLevel: string
+    downloadMaxBrLevel: string
+    downloadMaxbr: number
+    fee: number
+    fl: number
+    flLevel: string
+    flag: number
+    freeTrialPrivilege: FreeTrialPrivilege
     id: number
-    name: string
-    pic: number
-    picUrl: string
-    pic_str?: string
-    tns: string[]
+    maxBrLevel: string
+    maxbr: number
+    payed: number
+    pl: number
+    plLevel: string
+    playMaxBrLevel: string
+    playMaxbr: number
+    preSell: boolean
+    rscl: any
+    sp: number
+    st: number
+    subp: number
+    toast: boolean
+}
+
+export interface ChargeInfoList {
+    chargeMessage: any
+    chargeType: number
+    chargeUrl: any
+    rate: number
+}
+
+export interface FreeTrialPrivilege {
+    listenType: any
+    resConsumable: boolean
+    userConsumable: boolean
 }
 
 export interface Author {
