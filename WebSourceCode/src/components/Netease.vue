@@ -3,8 +3,8 @@
   - # @作者         : 秋城落叶(QiuChenly)
   - # @邮件         : 1925374620@qq.com
   - # @文件         : 项目 [qqmusic] - Netease.vue
-  - # @修改时间    : 2023-03-20 02:02:55
-  - # @上次修改    : 2023/3/20 上午2:02
+  - # @修改时间    : 2023-03-20 02:08:45
+  - # @上次修改    : 2023/3/20 上午2:08
   -->
 
 <script lang="ts" setup>
@@ -254,7 +254,7 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
 
 <template>
   <div class="content">
-    <el-dialog class="dialog-attr" align-center width="90%" v-model="matchMusic"
+    <el-dialog class="dialog-attr" destroy-on-close align-center width="90%" v-model="matchMusic"
                :title="'查找歌曲 - ' + waitMatchMusic.title">
       <search-music :search="willSearchString"/>
     </el-dialog>
