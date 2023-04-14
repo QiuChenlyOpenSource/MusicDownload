@@ -3,8 +3,8 @@
  * # @作者         : 秋城落叶(QiuChenly)
  * # @邮件         : 1925374620@qq.com
  * # @文件         : 项目 [qqmusic] - BasicStore.ts
- * # @修改时间    : 2023-03-13 11:44:27
- * # @上次修改    : 2023/3/13 下午11:44
+ * # @修改时间    : 2023-04-14 01:32:39
+ * # @上次修改    : 2023/4/14 下午1:32
  */
 
 import {defineStore} from "pinia";
@@ -17,10 +17,13 @@ export const BasicStore = defineStore("basicStore", {
             token: "",
             searchHistory: [] as string[],
             lastSearch: "",
+            filterKeys: ['DJ', 'Remix', '即兴', '变调', 'Live', '伴奏', '版,', '版)', '慢四', "纯音乐", '二胡',
+                '串烧', '现场'],
             config: {
                 onlyMatchSearchKey: false,
                 ignoreNoAlbumSongs: false,
                 classificationMusicFile: false,
+                disableFilterKey: false,
                 concurrency: {
                     num: 16,
                     downloadFolder: ""
