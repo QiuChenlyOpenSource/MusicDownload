@@ -5,7 +5,9 @@
 #  @修改时间    : 2023-03-13 11:07:40
 #  @上次修改    : 2023/3/13 下午11:07
 import uuid
+import re
 
+from flaskSystem.src.Common.EncryptTools import KuwoDES
 from flaskSystem.src.Api.BaseApi import BaseApi
 from flaskSystem.src.Common import Http
 from flaskSystem.src.Common.Http import HttpRequest
@@ -178,7 +180,8 @@ class KwApi(BaseApi):
         """
         # 1000kape 320kmp3 192kmp3 128kmp3
         # url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid=82988488&format=mp3&response=url&br=320kmp3'
-        url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&br={br}'
-        url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&format=mp3&response=url&br={br}'
+        #url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&br={br}'
+        #url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&format=mp3&response=url&br={br}'
+        url = f'''http://nmobi.kuwo.cn/mobi.s?f=kuwo&q={KuwoDES.base64_encrypt('corp=kuwo&p2p=1&type=convert_url2&format=flac|mp3|aac&rid={mid}')}'''
         res = self.getUrl(url)
         return res
