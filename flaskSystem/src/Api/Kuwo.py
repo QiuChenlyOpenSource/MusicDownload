@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Kuwo.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-04-23 03:31:41
+#  @上次修改    : 2023/4/23 下午3:31
 import uuid
 import re
 
@@ -23,6 +23,7 @@ class KwApi(BaseApi):
     def __init__(self):
         self.httpClient = Http.HttpRequest()
         self.generateCSRFToken()
+        self.__KuwoDES = KuwoDES()
 
     def search(self, searchKey: str) -> list[Songs]:
         pass
@@ -163,6 +164,8 @@ class KwApi(BaseApi):
         res = res.json()
         return res['data']['url']
 
+    __KuwoDES: KuwoDES = None
+
     def getDownloadUrlV2(self, mid: str, br='1000kape'):
         """
         下载地址解析
@@ -180,8 +183,24 @@ class KwApi(BaseApi):
         """
         # 1000kape 320kmp3 192kmp3 128kmp3
         # url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid=82988488&format=mp3&response=url&br=320kmp3'
-        #url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&br={br}'
-        #url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&format=mp3&response=url&br={br}'
-        url = f'''http://nmobi.kuwo.cn/mobi.s?f=kuwo&q={KuwoDES.base64_encrypt('corp=kuwo&p2p=1&type=convert_url2&format=flac|mp3|aac&rid={mid}')}'''
+        # url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&br={br}'
+        url = f'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid={mid}&format=mp3&response=url&br={br}'
         res = self.getUrl(url)
         return res
+
+    def getDownloadUrlByApp(self, mid: str):
+        """
+        根据加密算法的到App协议的直链接
+
+        感谢@helloplhm-qwq(https://github.com/helloplhm-qwq)的提交
+        Args:
+            mid: 媒体id
+
+        Returns:
+            直链地址
+        """
+        willEnc = f'corp=kuwo&p2p=1&type=convert_url2&format=flac|mp3|aac&rid={mid}'
+        url = f'''http://nmobi.kuwo.cn/mobi.s?f=kuwo&q={self.__KuwoDES.base64_encrypt(willEnc)}'''
+        res = self.getUrl(url)
+        link = subString(res.text, "url=", "\r\n")
+        return link

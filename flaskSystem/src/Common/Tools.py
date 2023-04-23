@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-03-14 02:32:54
-#  @上次修改    : 2023/3/14 上午2:32
+#  @修改时间    : 2023-04-23 03:31:07
+#  @上次修改    : 2023/4/23 下午3:31
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -75,10 +75,15 @@ def fixWindowsFileName2Normal(texts=''):
 
 def handleKuwo(mid: str, type: str):
     from flaskSystem.API.kw import kw
-    url = kw.getDownloadUrlV2(mid, type)
-    if url.text == 'failed' or url.text == 'res not found':
+    # url = kw.getDownloadUrlV2(mid, type)
+    # if url.text == 'failed' or url.text == 'res not found':
+    #     return None
+    # return url.json()['url']
+
+    url = kw.getDownloadUrlByApp(mid)
+    if len(url) < 10:  # 这里会返回一个很长的网址 所以一定超过10判定成功
         return None
-    return url.json()['url']
+    return url
 
 
 def handleMigu(mid: str, _type: str):
