@@ -257,8 +257,25 @@ docker pull registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_dow
 ```
 
 Docker 镜像部署需要进行端口映射，可以采用以下命令进行端口映射：
+用你的本地使用目录替换下方“本地目录” 如 E:\music
 ```bash
-docker run -p 127.0.0.1:8899:8899 -it dockerimage:latest
+docker run -p 127.0.0.1:8899:8899 -v 本地目录:/workspace/music -it dockerimage:latest 
+```
+
+docker-compose方式，本地新建txt，重命名为docker-compose.yml
+复制以下内容，同样注意替换“本地目录”
+```
+version: "3"
+services:
+  downloader:
+    image: registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader
+    container_name: music
+    network_mode: bridge
+    volumes:
+      - 本地目录:/workspace/music
+    ports:
+      - "127.0.0.1:8899:8899"
+    restart: always 
 ```
 
 # 免责声明
