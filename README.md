@@ -280,6 +280,8 @@ services:
     restart: always 
 ```
 
+然后 打开cmd命令行,cd到docker-compose.yml所在目录  ```docker-compose up -d```
+
 # 免责声明
 
 禁止任何形式的商业用途，包括但不仅限于售卖/打赏/获利，不得使用本代码进行任何形式的牟利/贩卖/传播，再次强调仅供个人私下研究学习技术使用，有条件者请支持正版音乐！
