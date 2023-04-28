@@ -21,3 +21,9 @@ jobs:
       run: |
         docker build -t registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader:$IMAGE_TAG .
         docker push registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader:$IMAGE_TAG
+    - name: Build and Push Docker Image latest
+      env:
+        IMAGE_TAG: ${{ github.sha }} # 用于标记容器版本号
+      run: |
+        docker build -t registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader:latest .
+        docker push registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader:latest
