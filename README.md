@@ -274,8 +274,9 @@ docker rm 容器名称
 最后，上面```docker pull```和```docker run```的代码重新执行一遍
 
 
+docker-compose方式部署
 
-docker-compose方式，本地新建txt，重命名为docker-compose.yml （不会修改后缀请百度）
+本地新建txt，重命名为docker-compose.yml （不会修改后缀请百度）
 
 复制以下内容，同样注意替换“本地目录”
 ```
