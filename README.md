@@ -87,9 +87,11 @@ IDE: Windows Notepad
 ![img.png](img.png)
 
 或者通过Google风格的注释附加在函数注释上:
+
 ![img_4.png](img_4.png)
 
 或者通过IDE配置自动更新你的版权信息:
+
 ![img_5.png](img_5.png)
 
 ## 特别功能
@@ -236,10 +238,13 @@ python MainServer.py
 取消网易云自动/手动匹配的错误歌曲信息。有时候我们上传的歌曲信息网易云会识别错误，所以我们可以取消匹配或者手动更新。
 
 ![img_12.png](img_12.png)
+
 ![img_13.png](img_13.png)
 
 歌曲ID如何获得？
+
 ![img_14.png](img_14.png)
+
 ![img_15.png](img_15.png)
 
 ### Docker镜像部署
