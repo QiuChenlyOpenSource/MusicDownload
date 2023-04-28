@@ -16,6 +16,7 @@
     * [新增网易云盘歌曲信息纠错](#新增网易云盘歌曲信息纠错)
         * [确认匹配](#确认匹配)
         * [取消匹配](#取消匹配)
+    * [Docker镜像部署](#Docker镜像部署)
 * [免责声明](#免责声明)
 * [致谢](#致谢)
 * [其他资料](#其他资料)
@@ -240,6 +241,25 @@ python MainServer.py
 歌曲ID如何获得？
 ![img_14.png](img_14.png)
 ![img_15.png](img_15.png)
+
+### Docker镜像部署
+
+可以通过自己自己打包 Docker 进行部署，也可以使用本项目打包好的容器进行部署
+
+自己打包 Docker 进行部署执行以下命令：
+```bash
+docker build -t dockerimage .
+```
+
+使用本项目打包好的容器进行部署：
+```bash
+docker pull registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader
+```
+
+Docker 镜像部署需要进行端口映射，可以采用以下命令进行端口映射：
+```bash
+docker run -p 127.0.0.1:8899:8899 -it dockerimage:latest
+```
 
 # 免责声明
 
