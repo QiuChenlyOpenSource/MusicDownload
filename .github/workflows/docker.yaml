@@ -1,0 +1,23 @@
+name: actions
+ 
+on: [push, pull_request] # 触发事件
+ 
+jobs:
+  bt-product-release:
+    if: ${{ github.ref == 'refs/heads/main' }}  # 检测main分支是否有更新
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2 # pull代码到运行服务器上
+    - name: Login to Aliyun Container Registry (ACR)
+      uses: aliyun/acr-login@v1 # 使用阿里云镜像服务action
+      with:
+        login-server: registry.cn-hangzhou.aliyuncs.com # 务必正确填写镜像容器服务的登录地址
+        region-id: cn-hangzhou # 务必正确填写镜像容器服务的登录地址
+        username: "${{ secrets.REGISTRY_USERNAME }}" # 引用GitHub repo设置的镜像容器服务用户名
+        password: "${{ secrets.REGISTRY_PASSWORD }}" # 引用GitHub repo设置的镜像容器服务密码
+    - name: Build and Push Docker Image
+      env:
+        IMAGE_TAG: ${{ github.sha }} # 用于标记容器版本号
+      run: |
+        docker build -t registry.cn-shanghai.aliyuncs.com/bullettech_services/app:$IMAGE_TAG .
+        docker push registry.cn-shanghai.aliyuncs.com/bullettech_services/app:$IMAGE_TAG
