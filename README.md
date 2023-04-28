@@ -275,7 +275,9 @@ docker rm 容器名称
 
 
 
-docker-compose方式，本地新建txt，重命名为docker-compose.yml （不会修改后缀请百度）
+docker-compose部署方式
+
+本地新建txt，重命名为docker-compose.yml （不会修改后缀请百度）
 
 复制以下内容，同样注意替换“本地目录”
 ```
