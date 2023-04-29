@@ -61,6 +61,16 @@ IDE: Windows Notepad
 1. Windows用户可能体验不是很好，因为很多适配坑。
 2. QQ音乐搜不到,是因为搜索频率过快。别问我为什么才搜两次就频繁了，你问qq。
 3. 下载歌曲后前端页面没有提示，看命令行窗口就知道有没有下载成功了。
+4. 昨天碰到有人因为MIME严格模式导致无法正常加载js文件，最终页面打开空白的bug，这里声明一下：垃圾Windows是这样的。解决办法如下：
+   报错信息类似于：
+   ![image](https://user-images.githubusercontent.com/24793281/235321487-6593d996-a616-4236-ae1f-4fa10211671e.png)
+   
+   给后面用Windows碰到一样报错问题的同学解决方法：
+   flak框架下运行仍然报错，这是因为加载xxx.js文件默认为text/plain格式，不能正常解析，解决方法如下图所示，修改注册表即可，将图中Content Type由原来的text/plain改为 application/javascript，然后重新打开项目即可：
+   ![image](https://user-images.githubusercontent.com/24793281/235321358-2888adb3-d571-48e0-88fc-a2836211232d.png)
+
+   另外再次赞美windows的天才设计
+
 
 ## 关于网易云登录功能的声明:
 
