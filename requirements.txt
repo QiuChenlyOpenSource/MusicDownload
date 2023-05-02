@@ -1,4 +1,4 @@
-Flask==2.2.3
+Flask==2.3.2
 flask_cors==3.0.10
 pycryptodome==3.17
 requests==2.28.2
