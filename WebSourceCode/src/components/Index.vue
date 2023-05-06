@@ -81,7 +81,7 @@ onMounted(() => {
 
   min-width: 800px;
   min-height: 600px;
-  overflow: scroll;
+  overflow: auto;
 
   .left-banner {
     overflow: hidden;
@@ -130,7 +130,7 @@ onMounted(() => {
   .right-content {
     // background-color: gainsboro;
     flex: 1;
-    overflow: scroll;
+    overflow: auto;
   }
 }
 </style>
