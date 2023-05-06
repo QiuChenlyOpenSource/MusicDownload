@@ -163,7 +163,7 @@ const enterClick = (ev: KeyboardEvent) => {
     width: 100%;
     display: flex;
     flex-direction: column;
-    overflow: scroll;
+    overflow: auto;
 
     .el-space {
       padding: 10px;
