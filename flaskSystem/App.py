@@ -103,9 +103,9 @@ def executeFn(a1: str, a2: bool):
     return a1 + "a2 True" if a2 else "a2 False"
 
 
-def Start():
+def Start(port):
     app.run(
         '0.0.0.0',
-        8899,
+        port,
         debug=False
     )
