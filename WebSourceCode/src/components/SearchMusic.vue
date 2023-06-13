@@ -217,6 +217,15 @@ const downloadAllOfPage = () => {
         handleDown(a)
     }
 }
+
+/**
+ * 触发下载操作
+ */ 
+const handleSearch = () => {
+    searchCache.value = undefined;
+    music_current_page.value = 1;
+    search();
+}
 </script>
 
 <template>
@@ -228,6 +237,7 @@ const downloadAllOfPage = () => {
                         v-model="basicStore.lastSearch"
                         placeholder="请输入关键词搜索"
                         class="input-with-select"
+                        @keyup.enter="handleSearch"
                 >
                     <template #prepend>
                         <el-select
@@ -239,11 +249,7 @@ const downloadAllOfPage = () => {
                         </el-select>
                     </template>
                     <template #append>
-                        <el-button :icon="Search" @click="()=>{
-            searchCache = undefined;
-            music_current_page = 1;
-            search()
-          }"/>
+                        <el-button :icon="Search" @click="handleSearch"/>
                     </template>
                 </el-input>
                 <div class="options">
