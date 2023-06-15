@@ -1,0 +1,11 @@
+version: "3"
+services:
+  downloader:
+    image: registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader
+    container_name: music
+    network_mode: bridge
+    volumes:
+      - 本地目录:/workspace/music
+    ports:
+      - "127.0.0.1:8899:8899"
+    restart: always 

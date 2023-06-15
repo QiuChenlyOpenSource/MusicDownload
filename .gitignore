@@ -1,0 +1,10 @@
+/NetEase.cfg
+/config.json
+/music
+.DS_Store
+venv
+/login.png
+.idea/*
+**/__pycache__
+!.idea/runConfigurations
+.vscode
