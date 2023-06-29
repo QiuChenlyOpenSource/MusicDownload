@@ -44,5 +44,6 @@ basicStore.initEnv();
   height: 45px;
   align-items: center;
   justify-content: center;
+  z-index: 99;
 }
 </style>
