@@ -28,6 +28,9 @@ def search(searchKey: str, page=1, size=30):
         elif command == 'id':
             # 指定单曲id
             lst = QQApi.getSingleMusicInfo(_id)
+        elif command == 't':
+            # 加载排行版
+            lst = QQApi.parseQQMusicToplist(_id)
         else:
             lst = []
     else:
