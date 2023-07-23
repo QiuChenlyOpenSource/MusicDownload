@@ -1,9 +1,9 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
 #  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : qiuchenly@outlook.com
+#  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Http.py
-#  @修改时间    : 2023-03-06 06:16:00
-#  @上次修改    : 2023/3/6 下午6:16
+#  @修改时间    : 2023-07-24 02:07:51
+#  @上次修改    : 2023/7/24 上午2:07
 
 import json
 from http.cookiejar import Cookie
@@ -19,10 +19,17 @@ class HttpRequest:
         # 全局唯一Session
         self.__session = requests.Session()
 
-    def getHttp(self, url: str, method: int = 0, data: bytes = r'', header: dict = {}) -> requests.Response:
+    def getHttp(self,
+                url: str,
+                method: int = 0,
+                data: bytes = r'',
+                header: dict[str, str] = {},
+                params: dict[str, str] = {}
+                ) -> requests.Response:
         """
         Http请求-提交二进制流
         Args:
+            params: url后面的网址参数
             url: url网址
             method: 0 表示Get请求 1 表示用POST请求. 默认值为 0.
             data: 提交的二进制流data数据. 默认值为 r''.
@@ -32,9 +39,9 @@ class HttpRequest:
             requests.Response: 返回的http数据
         """
         if method == 0:
-            d = self.__session.get(url, headers=header)
+            d = self.__session.get(url, headers=header, params=params)
         else:
-            d = self.__session.post(url, data, headers=header)
+            d = self.__session.post(url, data, headers=header, params=params)
         return d
 
     def getHttp2Json(self, url: str, method: int = 0, data: dict = {}, header: dict = {}):

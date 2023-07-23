@@ -1,9 +1,9 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
 #  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : qiuchenly@outlook.com
+#  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - MyFreeMP3.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-07-24 06:21:40
+#  @上次修改    : 2023/7/24 上午4:33
 import time
 from typing import Dict
 
@@ -27,7 +27,7 @@ class MyFreeMP3():
         return res
 
     def search(self, data):
-        u = f'https://test.quanjian.com.cn/m/api/search'
+        u = f'https://api.liumingye.cn/m/api/search'
         res = self.getUrl(u, 1, data)
         res = res.json()
         if res['code'] != 200:

@@ -1,9 +1,9 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
 #  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : qiuchenly@outlook.com
+#  @邮件         : 1925374620@qq.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-04-23 03:31:07
-#  @上次修改    : 2023/4/23 下午3:31
+#  @修改时间    : 2023-07-24 04:28:10
+#  @上次修改    : 2023/7/24 上午4:27
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -151,7 +151,8 @@ def downSingle(music, download_home, config):
         link = handleKuwo(music['mid'], '1000kape')  # music['prefix'] + 'k' + music['extra']
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'mg':
-        link = handleMigu(music['mid'], music['prefix'])
+        miguMusicInfo = handleMigu(music['mid'], music['prefix'])
+        link = miguMusicInfo['url']  # music['prefix'] + 'k' + music['extra']
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'wyy':
         link: str = handleWyy(music['mid'])

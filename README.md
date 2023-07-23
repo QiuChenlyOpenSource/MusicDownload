@@ -2,27 +2,26 @@
 
 <!-- TOC -->
 
-- [大纲](#大纲)
-- [项目介绍](#项目介绍)
-- [已知问题](#已知问题)
-  - [关于网易云登录功能的声明:](#关于网易云登录功能的声明)
-- [前后端源码文件夹](#前后端源码文件夹)
-  - [特别功能](#特别功能)
-  - [](#)
-- [使用方法](#使用方法)
-    - [0. 代码更新频繁,切记及时更新](#0-代码更新频繁切记及时更新)
-    - [1. 安装环境](#1-安装环境)
-    - [2. 进入软件包目录下启动软件](#2-进入软件包目录下启动软件)
-    - [高级搜索方法](#高级搜索方法)
-    - [新增网易云盘歌曲信息纠错](#新增网易云盘歌曲信息纠错)
-      - [确认匹配](#确认匹配)
-      - [取消匹配](#取消匹配)
-    - [Docker镜像部署](#docker镜像部署)
-    - [自定义端口设置](#自定义端口设置)
-- [免责声明](#免责声明)
-- [致谢](#致谢)
-- [其他资料](#其他资料)
-- [名词解释](#名词解释)
+* [大纲](#大纲)
+* [项目介绍](#项目介绍)
+* [已知问题](#已知问题)
+    * [关于网易云登录功能的声明:](#关于网易云登录功能的声明)
+* [前后端源码文件夹](#前后端源码文件夹)
+    * [特别功能](#特别功能)
+* [使用方法](#使用方法)
+    * [0. 代码更新频繁,切记及时更新](#0-代码更新频繁切记及时更新)
+    * [1. 安装环境](#1-安装环境)
+    * [2. 进入软件包目录下启动软件](#2-进入软件包目录下启动软件)
+    * [高级搜索方法](#高级搜索方法)
+    * [新增网易云盘歌曲信息纠错](#新增网易云盘歌曲信息纠错)
+        * [确认匹配](#确认匹配)
+        * [取消匹配](#取消匹配)
+    * [Docker镜像部署](#docker镜像部署)
+    * [自定义端口设置](#自定义端口设置)
+* [免责声明](#免责声明)
+* [致谢](#致谢)
+* [其他资料](#其他资料)
+* [名词解释](#名词解释)
 
 <!-- TOC -->
 
@@ -68,11 +67,11 @@ IDE: Windows Notepad
    ![image](https://user-images.githubusercontent.com/24793281/235321487-6593d996-a616-4236-ae1f-4fa10211671e.png)
 
    给后面用Windows碰到一样报错问题的同学解决方法：
-   flak框架下运行仍然报错，这是因为加载xxx.js文件默认为text/plain格式，不能正常解析，解决方法如下图所示，修改注册表即可，将图中Content Type由原来的text/plain改为 application/javascript，然后重新打开项目即可：
+   flak框架下运行仍然报错，这是因为加载xxx.js文件默认为text/plain格式，不能正常解析，解决方法如下图所示，修改注册表即可，将图中Content
+   Type由原来的text/plain改为 application/javascript，然后重新打开项目即可：
    ![image](https://user-images.githubusercontent.com/24793281/235321358-2888adb3-d571-48e0-88fc-a2836211232d.png)
 
    另外再次赞美windows的天才设计
-
 
 ## 关于网易云登录功能的声明:
 
@@ -110,11 +109,11 @@ IDE: Windows Notepad
 
 | 功能                 | 状态  | 附加说明                                 |
 |--------------------|-----|--------------------------------------|
-| 网易云会员歌曲搜索&歌单下载     | 已完成 | 版权问题灰色歌曲没有CDN资源缓存 无法下载               |
-| 酷我音乐无损音质下载         | 已完成 | 支持Flac和320KbpsMP3下载 根据网友梨花喵的加密算法获取解析 |
-| 咪咕无损下载             | 已完成 | 可以下载Flac/320KbpsMP3歌曲                |
+| 网易云会员歌曲搜索&歌单下载     | 未修复 | 版权问题灰色歌曲没有CDN资源缓存 无法下载               |
+| 酷我音乐无损音质下载         | 已修复 | 支持Flac和320KbpsMP3下载 根据网友梨花喵的加密算法获取解析 |
+| 咪咕无损下载             | 未修复 | 可以下载Flac/320KbpsMP3歌曲                |
 | QQ音乐无损会员/高解析度无损下载  | 已完成 | 已经修复官方无损解析接口                         |
-| FreeMyMP3/高解析度无损下载 | 已完成 | 狠狠的加密                                |
+| FreeMyMP3/高解析度无损下载 | 已修复 | 狠狠的加密 v2算法已破解                        |
 
 基于web的友好界面出来啦
 
@@ -229,7 +228,7 @@ python MainServer.py
 | (album) b:+专辑ID    | ![img_7.png](img_7.png)   | ![img_6.png](img_6.png)   | 获取一张专辑里的歌曲                                                                      |
 | (playlist) p:+歌单ID | ![img_9.png](img_9.png)   | ![img_8.png](img_8.png)   | 获取一张歌单里的所有歌曲,需要注意的是列表下面的分页是无效的 不要切换页面 因为他一次性是加载的整个歌单列表                          |
 | (id) id:+歌曲ID      | ![img_11.png](img_11.png) | ![img_10.png](img_10.png) | 有时候有些二逼非主流歌曲名称是及其之难以用输入法扣出来的，这个时候可以用id直接获取到这首歌。不想用那些二逼非主流歌曲做演示，用我最爱的杰伦演示给你们看看得了 |
-| (toplist) t:+榜单ID      | ![img_17.png](img_17.png) | ![img_16.png](img_16.png) | 获取一张榜单里的歌曲 |
+| (toplist) t:+榜单ID  | ![img_17.png](img_17.png) | ![img_16.png](img_16.png) | 获取一张榜单里的歌曲                                                                      |
 
 2023.4.14
 
@@ -265,11 +264,13 @@ python MainServer.py
 可以通过自己自己打包 Docker 进行部署，也可以使用本项目打包好的容器进行部署
 
 自己打包 Docker 进行部署执行以下命令：
+
 ```bash
 docker build -t dockerimage .
 ```
 
 使用本项目打包好的容器进行部署：
+
 ```bash
 docker pull registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_downloader
 ```
@@ -277,6 +278,7 @@ docker pull registry.cn-hangzhou.aliyuncs.com/music_downloader/qq_flac_music_dow
 Docker 镜像部署需要进行端口映射，可以采用以下命令进行端口映射：
 
 （注意：用你的本地使用目录替换下方“本地目录” 如 E:\music）
+
 ```bash
 docker run -p 127.0.0.1:8899:8899 -v 本地目录:/workspace/music -it dockerimage:latest
 ```
@@ -284,14 +286,13 @@ docker run -p 127.0.0.1:8899:8899 -v 本地目录:/workspace/music -it dockerima
 更新方式：先运行 ```docker ps -a ```查看容器名称
 
 然后
+
 ```
 docker stop 容器名称
 docker rm 容器名称
 ```
 
 最后，上面```docker pull```和```docker run```的代码重新执行一遍
-
-
 
 docker-compose部署方式
 
@@ -300,6 +301,7 @@ docker-compose部署方式
 复制以下内容，同样注意替换“本地目录”
 
 或者你直接下载项目中的docker-compose.yml，然后自行修改本地目录
+
 ```
 version: "3"
 services:
@@ -317,15 +319,18 @@ services:
 然后 打开cmd命令行,cd到docker-compose.yml所在目录  ```docker-compose up -d```
 
 需要更新的时候，也是cd到docker-compose.yml所在目录
+
 ```
 docker-compose pull
 docker-compose up -d
 ```
+
 相对docker，更新比较简单，所以个人比较推荐使用docker-compose的方式
 
 ### 自定义端口设置
 
 部分设备会存在 8889 端口被占用的情况，部署时可自定义端口，终端/控制台 进入到本文件所在的目录 执行以下指令:
+
 ```bash
 # []内为可选参数
 python3 MainServer.py [--port 8999]
