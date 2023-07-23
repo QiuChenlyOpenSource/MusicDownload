@@ -60,6 +60,36 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@media screen and (max-width: 550px) {
+  .left-banner {
+    box-sizing: border-box;
+    box-shadow: none !important;
+    border: solid 1px var(--qiuchen-text);
+
+    width: auto !important;
+    min-width: auto !important;
+    min-height: auto !important;
+
+    .title {
+      display: none !important;
+    }
+  }
+
+  .functions {
+
+    & div {
+      box-shadow: none !important;
+      border: solid 1px var(--qiuchen-text);
+      padding: 10px !important;
+    }
+
+
+    span {
+      display: none;
+    }
+  }
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -79,8 +109,6 @@ onMounted(() => {
   height: 100%;
   display: flex;
 
-  min-width: 800px;
-  min-height: 600px;
   overflow: auto;
 
   .left-banner {

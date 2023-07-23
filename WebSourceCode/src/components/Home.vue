@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { Download, Switch } from "@element-plus/icons-vue";
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import { SystemStore } from "@/store/SystemStore.js";
 import { Api } from "@/utils/Http";
 
@@ -19,10 +19,18 @@ const save_config = () => {
   Api.setBaseConfig({
     num: basicStore.config.concurrency.num,
     folder: basicStore.config.concurrency.downloadFolder,
-  }).then((r) => {});
+  }).then((r) => { });
 };
 
 const customKey = ref("");
+
+const title_height = ref()
+
+const title_height_size = ref(0)
+
+onMounted(() => {
+  title_height_size.value = title_height.value.clientHeight;
+})
 
 const loadConfig = () => {
   Api.getBaseConfig().then((r) => {
@@ -58,9 +66,11 @@ const enterClick = (ev: KeyboardEvent) => {
 
 <template>
   <div class="content">
-    <h1 style="text-align: center">网易云曲库流浪计划</h1>
-    <div class="safe-area">
-      <el-space fill="fill" direction="vertical" wrap>
+    <span class="title-name" ref="title_height">网易云曲库流浪计划</span>
+    <div class="safe-area" :style="{
+      'padding-top': title_height_size + 'px'
+    }">
+      <div class="cards">
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
@@ -84,19 +94,12 @@ const enterClick = (ev: KeyboardEvent) => {
           <div class="function">
             <div class="threadControl">
               <div>多线程数</div>
-              <el-input
-                v-model="basicStore.config.concurrency.num"
-                placeholder="输入协程并发数量"
-                :prefix-icon="Switch"
-              />
+              <el-input v-model="basicStore.config.concurrency.num" placeholder="输入协程并发数量" :prefix-icon="Switch" />
             </div>
             <div class="threadControl">
               <div>下载目录</div>
-              <el-input
-                v-model="basicStore.config.concurrency.downloadFolder"
-                placeholder="输入下载目录路径"
-                :prefix-icon="Download"
-              />
+              <el-input v-model="basicStore.config.concurrency.downloadFolder" placeholder="输入下载目录路径"
+                :prefix-icon="Download" />
             </div>
             <div class="actions">
               <el-button type="success" @click="save_config">保存</el-button>
@@ -112,28 +115,16 @@ const enterClick = (ev: KeyboardEvent) => {
           </template>
           <div class="filter-area">
             <div class="filter-list">
-              <el-tag
-                closable
-                round
-                effect="dark"
-                class="filter-key"
-                v-for="it in basicStore.filterKeys"
-                :key="it"
-                @close="deleteKeys(it)"
-                >{{ it }}
+              <el-tag closable round effect="dark" class="filter-key" v-for="it in basicStore.filterKeys" :key="it"
+                @close="deleteKeys(it)">{{ it }}
               </el-tag>
               <div>
-                <el-input
-                  style="width: 400px"
-                  v-model="customKey"
-                  placeholder="输入自定义关键词并按下Enter"
-                  @keyup="enterClick"
-                />
+                <el-input v-model="customKey" placeholder="输入自定义关键词并按下Enter" @keyup="enterClick" />
               </div>
             </div>
           </div>
         </el-card>
-      </el-space>
+      </div>
     </div>
     <div class="button-bar">
       <span>音质升级计划</span>
@@ -143,24 +134,61 @@ const enterClick = (ev: KeyboardEvent) => {
 </template>
 
 <style lang="scss" scoped>
+@media screen and (max-width: 550px) {
+  .content {
+    .title-name {
+      font-size: 15px !important;
+    }
+
+    .button-bar {
+      font-size: 10px !important;
+      //color: rgba(black, 0.6);
+      border-top: 1px solid var(--qiuchen-text-15) !important;
+      padding: 15px 0 !important;
+    }
+
+    .filter-area {
+      .el-tag {
+        padding: 15px 20px;
+        font-size: 14px;
+      }
+    }
+  }
+}
+
 .content {
   height: 100%;
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  position: relative;
+
+  .title-name {
+    font-size: 28px;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(black, 0.1);
+    backdrop-filter: blur(10px);
+    height: 45px;
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: solid 1px rgba(white, 0.1);
+  }
 
   .safe-area {
     flex: 1;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
+    overflow-x: hidden;
 
-    .el-space {
-      padding: 10px;
+    .cards {
+      margin: 10px;
 
       .el-card {
+        margin-bottom: 10px;
       }
     }
   }
@@ -174,6 +202,7 @@ const enterClick = (ev: KeyboardEvent) => {
     justify-content: center;
     align-items: center;
     padding: 30px 0;
+    transition: padding .5s;
   }
 
   .function {
@@ -185,10 +214,6 @@ const enterClick = (ev: KeyboardEvent) => {
     margin-bottom: 10px;
     display: inline-flex;
     flex-direction: column;
-
-    .el-input {
-      width: 400px;
-    }
   }
 
   .filter-area {
@@ -198,9 +223,9 @@ const enterClick = (ev: KeyboardEvent) => {
     .el-tag {
       margin-right: 10px;
       margin-bottom: 10px;
+      transition: padding .5s;
 
-      &:last-of-type {
-      }
+      &:last-of-type {}
     }
   }
 

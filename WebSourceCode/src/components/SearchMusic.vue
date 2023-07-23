@@ -471,8 +471,6 @@ const downloadAllPage = function () {
         flex-direction: row;
         align-items: center;
 
-        .name {}
-
         .flac-tip {
           font-size: 12px;
           color: #ffb703;
