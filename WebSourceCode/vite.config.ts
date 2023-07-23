@@ -21,6 +21,7 @@ let pathSrc = path.resolve(__dirname, "src");
 export default defineConfig({
   build: {
     outDir: "../flaskSystem/static",
+    minify: "terser",
     terserOptions: {
       compress: {
         drop_console: true,

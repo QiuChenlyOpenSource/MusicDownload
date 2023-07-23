@@ -28,6 +28,6 @@ export function timestampToTime(timestamp: number) {
  * 判断类型是否属于某一种
  * @param props
  */
-//@ts-ignore
 export const isType = <T>(props: any): props is T =>
+  //@ts-ignore
   typeof (props as T)["js"] !== "undefined";

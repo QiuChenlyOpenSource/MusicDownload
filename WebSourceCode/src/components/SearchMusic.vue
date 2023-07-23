@@ -8,7 +8,6 @@
   -->
 
 <script lang="ts" setup>
-//@ts-ignore
 import { Search } from "@element-plus/icons-vue";
 import { ref, onMounted, watch } from "vue";
 import { ref2, SystemStore } from "@/store/SystemStore";
@@ -233,6 +232,15 @@ const handleSearch = () => {
   music_current_page.value = 1;
   search();
 };
+
+const downloadAllPage = function () {
+  ElNotification({
+    title: '功能还没做捏',
+    message:
+      '关注嘉然 顿顿解馋 关注柯洁喵 谢谢喵 关注七海Nana7mi 010 谢谢喵 关注天选罕见冬雪莲 谢谢喵',
+    type: 'error',
+  });
+}
 </script>
 
 <template>
@@ -240,23 +248,11 @@ const handleSearch = () => {
     <div ref="headRef" class="head-section">
       <div class="top-tip">搜索</div>
       <div class="area-top">
-        <el-input
-          v-model="basicStore.lastSearch"
-          placeholder="请输入关键词搜索"
-          class="input-with-select"
-          @keyup.enter="handleSearch"
-        >
+        <el-input v-model="basicStore.lastSearch" placeholder="请输入关键词搜索" class="input-with-select"
+          @keyup.enter="handleSearch">
           <template #prepend>
-            <el-select
-              v-model="basicStore.config.platform"
-              placeholder="请选择接口"
-              style="width: 120px"
-            >
-              <el-option
-                v-for="it in apiList"
-                :label="it.name"
-                :value="it.value"
-              />
+            <el-select v-model="basicStore.config.platform" placeholder="请选择接口" style="width: 120px">
+              <el-option v-for="it in apiList" :label="it.name" :value="it.value" />
             </el-select>
           </template>
           <template #append>
@@ -264,119 +260,54 @@ const handleSearch = () => {
           </template>
         </el-input>
         <div class="options">
-          <el-checkbox
-            v-model="basicStore.config.onlyMatchSearchKey"
-            label="仅显示搜索的歌手歌曲"
-          />
-          <el-checkbox
-            v-model="basicStore.config.disableFilterKey"
-            label="不使用关键词过滤歌曲"
-          />
-          <el-checkbox
-            v-model="basicStore.config.ignoreNoAlbumSongs"
-            label="屏蔽无所属专辑歌曲"
-          />
-          <el-checkbox
-            v-model="basicStore.config.classificationMusicFile"
-            label="下载歌曲按专辑分类"
-          />
+          <el-checkbox v-model="basicStore.config.onlyMatchSearchKey" label="仅显示搜索的歌手歌曲" />
+          <el-checkbox v-model="basicStore.config.disableFilterKey" label="不使用关键词过滤歌曲" />
+          <el-checkbox v-model="basicStore.config.ignoreNoAlbumSongs" label="屏蔽无所属专辑歌曲" />
+          <el-checkbox v-model="basicStore.config.classificationMusicFile" label="下载歌曲按专辑分类" />
           <!--        <el-checkbox v-model="classificationMusicFile" label="按照专辑名称分文件夹归档音乐歌曲文件"/>-->
           <!--        <el-checkbox v-model="checked3" label="Option 1"/>-->
         </div>
-        <div
-          class="area-action"
-          v-if="
-            searchCache &&
-            searchCache.page.size > 0 &&
-            searchCache?.list.length !== 0
-          "
-        >
-          <el-button type="primary" @click="downloadAllOfPage"
-            >仅下载本页
+        <div class="area-action" v-if="searchCache &&
+          searchCache.page.size > 0 &&
+          searchCache?.list.length !== 0
+          ">
+          <el-button type="primary" @click="downloadAllOfPage">仅下载本页
           </el-button>
-          <el-button
-            type="primary"
-            @click="
-              function () {
-                ElNotification({
-                  title: '功能还没做捏',
-                  message:
-                    '关注嘉然 顿顿解馋 关注柯洁喵 谢谢喵 关注七海Nana7mi 010 谢谢喵 关注天选罕见冬雪莲 谢谢喵',
-                  type: 'error',
-                });
-              }
-            "
-            >下载所有页
+          <el-button type="primary" @click="downloadAllPage">下载所有页
           </el-button>
         </div>
       </div>
     </div>
-    <div
-      v-if="searchCache === undefined || basicStore.lastSearch.length === 0"
-      class="history"
-    >
+    <div v-if="searchCache === undefined || basicStore.lastSearch.length === 0" class="history">
       <div class="union">
         <i-system-uicons-undo-history />
         <span style="margin-left: 4px">历史搜索</span>
       </div>
       <div class="h-list">
-        <div
-          v-for="ind in refbasicStore.searchHistory.value"
-          @click="basicStore.lastSearch = ind"
-          class="search-tag"
-        >
+        <div v-for="ind in refbasicStore.searchHistory.value" @click="basicStore.lastSearch = ind" class="search-tag">
           {{ ind }}
         </div>
       </div>
-      <div
-        v-if="basicStore.searchHistory.length > 0"
-        class="clear-all-history"
-        @click="basicStore.searchHistory = []"
-      >
+      <div v-if="basicStore.searchHistory.length > 0" class="clear-all-history" @click="basicStore.searchHistory = []">
         <i-icon-park-twotone-clear-format />
       </div>
     </div>
-    <div
-      v-else
-      class="search-list"
-      :style="{
-        height: 'calc(100% - ' + paddingHeadHeight + 'px)',
-      }"
-    >
-      <div
-        style="margin: 10px"
-        v-if="searchCache === undefined || searchCache.list.length === 0"
-        class="error-load"
-      >
-        <el-empty
-          :description="
-            searchCache?.page.size > 0
-              ? '共搜索到' +
-                searchCache?.page.size +
-                '条数据,但是过滤后没有发现符合条件的数据。请检查搜索过滤条件是否设置正确。'
-              : '服务器请求搜索结果失败,请重试。'
-          "
-        />
+    <div v-else class="search-list" :style="{
+      height: 'calc(100% - ' + paddingHeadHeight + 'px)',
+    }">
+      <div style="margin: 10px" v-if="searchCache === undefined || searchCache.list.length === 0" class="error-load">
+        <el-empty :description="searchCache?.page.size > 0
+          ? '共搜索到' +
+          searchCache?.page.size +
+          '条数据,但是过滤后没有发现符合条件的数据。请检查搜索过滤条件是否设置正确。'
+          : '服务器请求搜索结果失败,请重试。'
+          " />
       </div>
       <div class="search-list-a" v-else>
         <div class="container">
-          <el-table
-            class="my-tb"
-            :data="searchCache.list"
-            style="width: 100%; z-index: 0"
-          >
-            <el-table-column
-              :formatter="timeFormat"
-              prop="time_public"
-              label="发表时间"
-              width="120"
-            />
-            <el-table-column
-              :show-overflow-tooltip="true"
-              prop="title"
-              label="歌曲名"
-              min-width="300"
-            >
+          <el-table class="my-tb" :data="searchCache.list" style="width: 100%; z-index: 0">
+            <el-table-column :formatter="timeFormat" prop="time_public" label="发表时间" width="120" />
+            <el-table-column :show-overflow-tooltip="true" prop="title" label="歌曲名" min-width="300">
               <template #default="scope">
                 <div class="title-tip">
                   <div class="flac-tip" v-if="scope.row.extra === 'flac'">
@@ -386,34 +317,14 @@ const handleSearch = () => {
                 </div>
               </template>
             </el-table-column>
-            <el-table-column
-              :show-overflow-tooltip="true"
-              :formatter="getSinger"
-              prop="singer.name"
-              label="艺术家"
-              width="200"
-            />
-            <el-table-column
-              :show-overflow-tooltip="true"
-              prop="album"
-              label="专辑"
-              width="200"
-            />
-            <el-table-column
-              :formatter="getFileTypeAndSize"
-              :show-overflow-tooltip="true"
-              prop="notice"
-              label="品质"
-              width="250"
-            />
+            <el-table-column :show-overflow-tooltip="true" :formatter="getSinger" prop="singer.name" label="艺术家"
+              width="200" />
+            <el-table-column :show-overflow-tooltip="true" prop="album" label="专辑" width="200" />
+            <el-table-column :formatter="getFileTypeAndSize" :show-overflow-tooltip="true" prop="notice" label="品质"
+              width="250" />
             <el-table-column fixed="right" label="操作">
               <template #default="scope">
-                <el-button
-                  link
-                  type="primary"
-                  size="small"
-                  @click="handleDown(scope.row)"
-                  >下载
+                <el-button link type="primary" size="small" @click="handleDown(scope.row)">下载
                 </el-button>
                 <!--                <el-button link type="primary" size="small">试听</el-button>-->
               </template>
@@ -421,15 +332,8 @@ const handleSearch = () => {
           </el-table>
         </div>
         <div class="bottom" v-if="searchCache">
-          <el-pagination
-            v-model:current-page="music_current_page"
-            @update:current-page="page_change"
-            background
-            class="tab-split"
-            :page-size="30"
-            layout="prev, pager, next"
-            :total="parseInt(searchCache.page.size + '')"
-          />
+          <el-pagination v-model:current-page="music_current_page" @update:current-page="page_change" background
+            class="tab-split" :page-size="30" layout="prev, pager, next" :total="parseInt(searchCache.page.size + '')" />
           <div class="tips">
             搜索到{{ searchCache.page.size }}条数据,当前第{{
               searchCache.page.cur
@@ -567,8 +471,7 @@ const handleSearch = () => {
         flex-direction: row;
         align-items: center;
 
-        .name {
-        }
+        .name {}
 
         .flac-tip {
           font-size: 12px;

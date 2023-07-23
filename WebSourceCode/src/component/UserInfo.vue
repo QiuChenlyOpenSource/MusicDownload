@@ -1,9 +1,9 @@
 <template>
   <div class="user-info">
-    <el-avatar class="avatar" :size="100" :src="userInfo.profile.avatarUrl"/>
+    <el-avatar class="avatar" :size="100" :src="userInfo.profile.avatarUrl" />
     <div class="bg" :style="{
-    background: 'no-repeat center/cover url('+userInfo.profile.backgroundUrl+')'
-  }"></div>
+      background: 'no-repeat center/cover url(' + userInfo.profile.backgroundUrl + ')'
+    }"></div>
     <div class="info-area">
       <div>UID {{ userInfo.profile.userId }}</div>
       <div class="tag">
@@ -20,9 +20,8 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps} from "vue"
-import {NetEaseUserInfo} from "@/utils/type/UserInfoDetail";
-import {timestampToTime} from "../utils/Utils";
+import { NetEaseUserInfo } from "@/utils/type/UserInfoDetail";
+import { timestampToTime } from "../utils/Utils";
 
 defineProps<{
   userInfo: NetEaseUserInfo
