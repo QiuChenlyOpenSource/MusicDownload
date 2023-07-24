@@ -25,8 +25,8 @@ const userStore = () => {
 };
 
 const config = {
-  baseURL: "",
-  // baseURL: "http://localhost:8899", // 本地测试时使用
+  // baseURL: "",
+  baseURL: "http://192.168.31.103:8899", // 本地测试时使用
   timeout: 15000,
   headers: {
     "Content-Type": "multipart/form-data;application/json;charset=UTF-8;",
@@ -112,12 +112,12 @@ export const Api = {
       type: string;
       v: string;
     } = {
-      page: 1,
-      text: "",
-      token: "",
-      type: "YQM",
-      v: "beta",
-    }
+        page: 1,
+        text: "",
+        token: "",
+        type: "YQM",
+        v: "beta",
+      }
   ) {
     let url = "/" + type + "/search";
     return this.post<SearchMusicResult>(url, data);
