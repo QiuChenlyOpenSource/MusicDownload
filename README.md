@@ -217,7 +217,9 @@ python MainServer.py
 恕我直言，你不是文曲星，没那本事几个字概括核心要点就不要概括，我理都不想理你。
 ![img_1.png](img_1.png)
 
-成功后google chrome/Microsoft Edge/Safari之类的浏览器打开[http://127.0.0.1:8899](http://127.0.0.1:8899)即可打开新世界
+成功后google chrome/Microsoft Edge/Safari浏览器打开[http://127.0.0.1:8899](http://127.0.0.1:8899)即可打开新世界。
+
+只在Edge浏览器测试UI通过，建议全部使用Microsoft Edge浏览器访问。
 
 ### 高级搜索方法
 

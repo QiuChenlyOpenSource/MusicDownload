@@ -9,7 +9,7 @@
 
 <script lang="ts" setup>
 import { Search } from "@element-plus/icons-vue";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, watchEffect } from "vue";
 import { ref2, SystemStore } from "@/store/SystemStore";
 import { Api } from "@/utils/Http";
 import {
@@ -165,9 +165,25 @@ function getFileTypeAndSize(
 }
 
 const paddingHeadHeight = ref(0);
+
+
+
 onMounted(() => {
-  const h = headRef.value as HTMLDivElement;
-  paddingHeadHeight.value = h.offsetTop + h.offsetHeight;
+  const observer = new ResizeObserver(entries => {
+    // 在回调中获得高度 
+    paddingHeadHeight.value = headRef.value.clientHeight
+  })
+  observer.observe(headRef.value)
+
+  window.onresize = () => {
+    // 窗口大小变化时更新高度
+    paddingHeadHeight.value = headRef.value.clientHeight
+
+  }
+
+  // console.log(headRef.value);
+  // const h = headRef.value as HTMLDivElement;
+  // paddingHeadHeight.value = h.offsetTop + h.offsetHeight;
   console.log("searchByNetease", searchByNetease);
   if (searchByNetease.search !== undefined) {
     basicStore.lastSearch = searchByNetease.search;
@@ -278,7 +294,9 @@ const downloadAllPage = function () {
         </div>
       </div>
     </div>
-    <div v-if="searchCache === undefined || basicStore.lastSearch.length === 0" class="history">
+    <div :style="{
+      'margin-top': paddingHeadHeight + 'px',
+    }" v-if="searchCache === undefined || basicStore.lastSearch.length === 0" class="history">
       <div class="union">
         <i-system-uicons-undo-history />
         <span style="margin-left: 4px">历史搜索</span>
@@ -292,8 +310,11 @@ const downloadAllPage = function () {
         <i-icon-park-twotone-clear-format />
       </div>
     </div>
-    <div v-else class="search-list" :style="{
+    <!-- :style="{
       height: 'calc(100% - ' + paddingHeadHeight + 'px)',
+    }" -->
+    <div v-else class="search-list" :style="{
+      'margin-top': paddingHeadHeight + 'px',
     }">
       <div style="margin: 10px" v-if="searchCache === undefined || searchCache.list.length === 0" class="error-load">
         <el-empty :description="searchCache?.page.size > 0
@@ -346,6 +367,46 @@ const downloadAllPage = function () {
 </template>
 
 <style lang="scss" scoped>
+@media screen and (max-width: 550px) {
+  .content {
+    min-width: auto !important;
+    position: relative;
+  }
+
+  .head-section {
+    z-index: 1;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    border-bottom: solid 1px var(--qiuchen-text-15);
+    margin: 0 !important;
+    backdrop-filter: blur(10px);
+
+    .top-tip {
+      height: 45px;
+      // background-color: #fff;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      font-size: 30px !important;
+    }
+
+    .area-top {
+      width: calc(100% - 20px);
+    }
+
+    .options {
+      flex-direction: column;
+      align-items: start;
+    }
+  }
+
+  .tips {
+    display: none;
+  }
+}
+
 .content {
   height: 100%;
   width: 100%;
@@ -373,21 +434,11 @@ const downloadAllPage = function () {
 
   flex-direction: column;
   align-items: center;
-
   position: relative;
 
-  .input-with-select {
-    max-width: 600px;
-  }
-
-  .top-tip {
-    font-size: 3em;
-    position: absolute;
-    left: 20px;
-  }
+  .input-with-select {}
 
   .area-top {
-    margin-top: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
