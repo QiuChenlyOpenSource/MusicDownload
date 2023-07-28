@@ -94,16 +94,9 @@ IDE: Windows Notepad
 [flaskSystem](flaskSystem)
 
 提交代码时源码顶部的版权注释尽量不要修改，这是我IDE自动生成的，每次都会自动更新。
-如果你需要保留你的修改记录，可以将你的个人信息附加到我的版权注释信息之下(注意有一行空格):
-![img.png](md/img.png)
-
-或者通过Google风格的注释附加在函数注释上:
+如果你需要保留你的修改记录，可以通过Google风格的注释附加在函数注释上:
 
 ![img_4.png](md/img_4.png)
-
-或者通过IDE配置自动更新你的版权信息:
-
-![img_5.png](md/img_5.png)
 
 ## 特别功能
 
@@ -120,6 +113,15 @@ IDE: Windows Notepad
 ![img_2.png](md/media/img_2.png)
 ![img_2.png](md/img_2.png)
 ![img_3.png](md/img_3.png)
+
+### 已支持元数据+内嵌歌词封面信息写入
+
+![img.png](md/img.png)
+
+目前仅适配:
+
+1. 咪咕平台
+
 ---
 
 # 使用方法

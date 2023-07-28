@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-28 06:26:59
-#  @上次修改    : 2023/7/28 下午6:26
+#  @修改时间    : 2023-07-28 08:32:25
+#  @上次修改    : 2023/7/28 下午8:32
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -12,10 +12,11 @@ import base64
 import json
 import os
 import threading
-
-import mutagen
 import requests
-from mutagen.id3 import ID3
+from mutagen.flac import FLAC, Picture
+from mutagen import id3
+from PIL import Image
+import io
 
 from flaskSystem.API.qq import QQApi
 
@@ -251,7 +252,8 @@ def downSingle(music, download_home, config):
         sz = f"%.2fMB" % (sz / 1024 / 1024)
         if sz == music['size']:
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
-            fulfillMusicMetaData(localFile, {})
+            if super_music_info:
+                fulfillMusicMetaData(localFile, {})
             return {
                 'code': 200,
                 'msg': "本地已下载,跳过下载"
@@ -264,17 +266,26 @@ def downSingle(music, download_home, config):
     with open(localFile, 'wb') as code:
         code.write(f.content)
         code.flush()
-        fulfillMusicMetaData(localFile, {})
+        if super_music_info:
+            fulfillMusicMetaData(localFile, {})
     return {
         'code': 200,
         'msg': "下载完成"
     }
 
 
-from mutagen.flac import FLAC, Picture
-from mutagen import id3
-from PIL import Image
-import io
+def convert_webp_bytes2jpeg_bytes(webp_bytes=b''):
+    """
+    转换webp二进制数据为jpeg专辑封面数据
+    Args:
+        webp_bytes: webp https response
+
+    Returns:
+        JPEG二进制数据流
+    """
+    temp = io.BytesIO()
+    Image.open(io.BytesIO(webp_bytes)).convert("RGB").save(temp, format="JPEG", quality=100)
+    return temp.getvalue()
 
 
 def fulfillMusicMetaData(musicFile, metaDataInfo):
@@ -290,7 +301,6 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
     fileType = None
     with open(musicFile, "rb") as mu:
         tpe = mu.read(128)
-        print(tpe)
         if tpe.startswith(b'fLaC'):
             fileType = 'flac'
 
@@ -314,51 +324,51 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
             music["LYRICS"] = lrcText
 
         # 下载封面
-        albumImage = [requests.get(it).content for it in metaDataInfo['albumImgs']]
+        albumImage = requests.get(metaDataInfo['albumImgs'][0]).content
 
-        for it in albumImage:
-            with open("tmp.webp", 'wb+') as w:
-                w.write(it)
-                w.flush()
-                w.close()
-            cache = io.BytesIO()
-            Image.open("tmp.webp").convert("RGB").save("cache.jpg", format="JPEG", quality=100)
-            with open('aa.jpg', 'rb') as f:
-                song_art = f.read()
-            pic = Picture()
+        music.clear_pictures()
 
-            pic.data = song_art
-
-            pic.type = id3.PictureType.COVER_FRONT
-            pic.mime = u"image/jpeg"
-            pic.width = 800
-            pic.height = 800
-            pic.depth = 16  # color depth
-
-            im1 = pic
-            # 在使用Mutagen库向音频文件添加图片元数据时,type参数表示图片的类型,主要有以下几种:
-            #
-            # 0 - 其他
-            # 1 - 32x32像素 PNG 文件图标
-            # 2 - 其他文件图标
-            # 3 - 前封面
-            # 4 - 后封面
-            # 5 - 素材(艺术家/表演者/剧组照片)
-            # 6 - 录音师/录音室/制作人/指挥照片
-            # 7 - 演出画面或电影/视频画面截图
-            # 8 - 鱼眼图的缩图
-            # 9 - 艺术家/表演者照片
-            # 10 - 发行商/制作商徽标
-            # 11 - 海报或横幅
-            # 所以,常见的使用场景是:
-            #
-            # 专辑封面:type=3(前封面)
-            # 歌曲封面:type=3(前封面)
-            # 艺术家图片:type=5或9
-            music.add_picture(im1)
+        pic = Picture()
+        pic.type = id3.PictureType.COVER_FRONT
+        pic.data = convert_webp_bytes2jpeg_bytes(albumImage)
+        pic.mime = u"image/jpeg"
+        im1 = pic
+        # 在使用Mutagen库向音频文件添加图片元数据时,type参数表示图片的类型,主要有以下几种:
+        #
+        # 0 - 其他
+        # 1 - 32x32像素 PNG 文件图标
+        # 2 - 其他文件图标
+        # 3 - 前封面
+        # 4 - 后封面
+        # 5 - 素材(艺术家/表演者/剧组照片)
+        # 6 - 录音师/录音室/制作人/指挥照片
+        # 7 - 演出画面或电影/视频画面截图
+        # 8 - 鱼眼图的缩图
+        # 9 - 艺术家/表演者照片
+        # 10 - 发行商/制作商徽标
+        # 11 - 海报或横幅
+        # 所以,常见的使用场景是:
+        #
+        # 专辑封面:type=3(前封面)
+        # 歌曲封面:type=3(前封面)
+        # 艺术家图片:type=5或9
+        music.add_picture(im1)
 
         # 下载歌手封面
-        singerImage = metaDataInfo['singerImgs']
+        singerImage = requests.get(metaDataInfo['singerImgs'][0]).content
+        pic = Picture()
+        pic.data = convert_webp_bytes2jpeg_bytes(singerImage)
+        pic.type = id3.PictureType.ARTIST
+        pic.mime = u"image/jpeg"
+        music.add_picture(pic)
 
+        # 标题
+        music['title'] = metaDataInfo['songName']
+
+        # 艺术家
+        music['artist'] = [it['name'] for it in metaDataInfo['artists']]
+
+        # 专辑
+        music['album'] = metaDataInfo['album']
         music.save()
     print("")
