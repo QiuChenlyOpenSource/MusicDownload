@@ -2,8 +2,10 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - App.py
-#  @修改时间    : 2023-03-13 11:42:05
-#  @上次修改    : 2023/3/13 下午11:42
+#  @修改时间    : 2023-07-28 10:52:00
+#  @上次修改    : 2023/7/28 下午10:52
+import json
+import os.path
 import time
 from concurrent.futures import Future
 
@@ -41,6 +43,12 @@ def configSave():
     location = jsn['folder']
     c.set_folder(location)
     c.initPool(num)
+    with open("config.cfg", "w+") as cfg:
+        cfg.write(json.dumps({
+            "thread_num": num,
+            "download_locate": location
+        }))
+        cfg.flush()
     return {
         'code': 200
     }
@@ -70,6 +78,13 @@ def add():
 
 c = Downloader()
 c.initPool(16)
+
+if os.path.exists("config.cfg"):
+    with open("config.cfg", "r") as cfg:
+        cfg = cfg.read()
+        cfg = json.loads(cfg)
+        c.initPool(int(cfg['thread_num']))
+        c.set_folder(cfg['download_locate'])
 
 
 def done(ret: Future):

@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-28 10:09:02
-#  @上次修改    : 2023/7/28 下午10:09
+#  @修改时间    : 2023-07-28 10:45:36
+#  @上次修改    : 2023/7/28 下午10:45
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -253,7 +253,7 @@ def downSingle(music, download_home, config):
         if sz == music['size']:
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
             if super_music_info:
-                fulfillMusicMetaData(localFile, {})
+                fulfillMusicMetaData(localFile, super_music_info)
             return {
                 'code': 200,
                 'msg': "本地已下载,跳过下载"
@@ -267,7 +267,7 @@ def downSingle(music, download_home, config):
         code.write(f.content)
         code.flush()
         if super_music_info:
-            fulfillMusicMetaData(localFile, {})
+            fulfillMusicMetaData(localFile, super_music_info)
     return {
         'code': 200,
         'msg': "下载完成"
