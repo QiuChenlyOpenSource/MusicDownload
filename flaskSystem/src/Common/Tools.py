@@ -1,18 +1,21 @@
 #  Copyright (c) 2023. 秋城落叶, Inc. All Rights Reserved
 #  @作者         : 秋城落叶(QiuChenly)
-#  @邮件         : 1925374620@qq.com
+#  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-24 04:28:10
-#  @上次修改    : 2023/7/24 上午4:27
+#  @修改时间    : 2023-07-28 06:26:59
+#  @上次修改    : 2023/7/28 下午6:26
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
 #  @邮件         : wangjingye55555@outlook.com
 import base64
+import json
 import os
 import threading
 
+import mutagen
 import requests
+from mutagen.id3 import ID3
 
 from flaskSystem.API.qq import QQApi
 
@@ -142,6 +145,7 @@ def downSingle(music, download_home, config):
     musicAlbumsClassification = config['classificationMusicFile']
 
     header = {}
+    super_music_info = None
     if platform == 'qq':
         musicid = music['musicid']
         file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
@@ -151,8 +155,8 @@ def downSingle(music, download_home, config):
         link = handleKuwo(music['mid'], '1000kape')  # music['prefix'] + 'k' + music['extra']
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'mg':
-        miguMusicInfo = handleMigu(music['mid'], music['prefix'])
-        link = miguMusicInfo['url']  # music['prefix'] + 'k' + music['extra']
+        super_music_info = handleMigu(music['mid'], music['prefix'])
+        link = super_music_info['url']  # music['prefix'] + 'k' + music['extra']
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}]"
     elif platform == 'wyy':
         link: str = handleWyy(music['mid'])
@@ -237,6 +241,8 @@ def downSingle(music, download_home, config):
     if os.path.exists(localFile):
         if platform != 'qq':
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
+            if super_music_info:
+                fulfillMusicMetaData(localFile, super_music_info)
             return {
                 'code': 200,
                 'msg': "本地已下载,跳过下载"
@@ -245,6 +251,7 @@ def downSingle(music, download_home, config):
         sz = f"%.2fMB" % (sz / 1024 / 1024)
         if sz == music['size']:
             print(f"本地已下载,跳过下载 [{music['album']} / {mShower}].")
+            fulfillMusicMetaData(localFile, {})
             return {
                 'code': 200,
                 'msg': "本地已下载,跳过下载"
@@ -257,7 +264,101 @@ def downSingle(music, download_home, config):
     with open(localFile, 'wb') as code:
         code.write(f.content)
         code.flush()
+        fulfillMusicMetaData(localFile, {})
     return {
         'code': 200,
         'msg': "下载完成"
     }
+
+
+from mutagen.flac import FLAC, Picture
+from mutagen import id3
+from PIL import Image
+import io
+
+
+def fulfillMusicMetaData(musicFile, metaDataInfo):
+    """
+    填充歌曲元数据 不同平台返回的元数据不完整 需要单独处理
+    Args:
+        musicFile: 音乐文件路径
+        metaDataInfo: 元数据内容
+
+    Returns:
+
+    """
+    fileType = None
+    with open(musicFile, "rb") as mu:
+        tpe = mu.read(128)
+        print(tpe)
+        if tpe.startswith(b'fLaC'):
+            fileType = 'flac'
+
+    if fileType == None:
+        return
+    if fileType == 'flac':
+        simple = FLAC("/Volumes/data/Jay/周杰伦 - 反方向的钟.flac")
+        music = FLAC(musicFile)
+
+        if 'source_platform' not in music:
+            # 添加音乐元数据获取来源
+            music["source_platform"] = json.dumps({
+                'platform': metaDataInfo['source_platform'],
+                "musicId": metaDataInfo['source_platform_music_id']
+            })
+
+        if 'LYRICS' not in music:
+            # 下载歌词
+            lrc = metaDataInfo['lrcUrl']
+            lrcText = requests.get(lrc).content.decode("utf-8")
+            music["LYRICS"] = lrcText
+
+        # 下载封面
+        albumImage = [requests.get(it).content for it in metaDataInfo['albumImgs']]
+
+        for it in albumImage:
+            with open("tmp.webp", 'wb+') as w:
+                w.write(it)
+                w.flush()
+                w.close()
+            cache = io.BytesIO()
+            Image.open("tmp.webp").convert("RGB").save("cache.jpg", format="JPEG", quality=100)
+            with open('aa.jpg', 'rb') as f:
+                song_art = f.read()
+            pic = Picture()
+
+            pic.data = song_art
+
+            pic.type = id3.PictureType.COVER_FRONT
+            pic.mime = u"image/jpeg"
+            pic.width = 800
+            pic.height = 800
+            pic.depth = 16  # color depth
+
+            im1 = pic
+            # 在使用Mutagen库向音频文件添加图片元数据时,type参数表示图片的类型,主要有以下几种:
+            #
+            # 0 - 其他
+            # 1 - 32x32像素 PNG 文件图标
+            # 2 - 其他文件图标
+            # 3 - 前封面
+            # 4 - 后封面
+            # 5 - 素材(艺术家/表演者/剧组照片)
+            # 6 - 录音师/录音室/制作人/指挥照片
+            # 7 - 演出画面或电影/视频画面截图
+            # 8 - 鱼眼图的缩图
+            # 9 - 艺术家/表演者照片
+            # 10 - 发行商/制作商徽标
+            # 11 - 海报或横幅
+            # 所以,常见的使用场景是:
+            #
+            # 专辑封面:type=3(前封面)
+            # 歌曲封面:type=3(前封面)
+            # 艺术家图片:type=5或9
+            music.add_picture(im1)
+
+        # 下载歌手封面
+        singerImage = metaDataInfo['singerImgs']
+
+        music.save()
+    print("")

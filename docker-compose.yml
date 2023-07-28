@@ -5,7 +5,7 @@ services:
     container_name: music
     network_mode: bridge
     volumes:
-      - 本地目录:/workspace/music
+      - 这里自己填写本地目录:/workspace/music
     ports:
       - "127.0.0.1:8899:8899"
     restart: always 
