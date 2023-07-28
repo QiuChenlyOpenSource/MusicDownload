@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-28 08:32:25
-#  @上次修改    : 2023/7/28 下午8:32
+#  @修改时间    : 2023-07-28 10:09:02
+#  @上次修改    : 2023/7/28 下午10:09
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -288,6 +288,25 @@ def convert_webp_bytes2jpeg_bytes(webp_bytes=b''):
     return temp.getvalue()
 
 
+def itunes_search_music_meta(albumName, songName, musicTitle):
+    url = "https://itunes.apple.com/search"
+
+    querystring = {
+        "term": musicTitle + " " + songName,
+        "media": "music",
+        "entity": "song",
+        "limit": "5",
+        "country": "CN"
+    }
+
+    response = requests.request("GET", url, params=querystring)
+
+    try:
+        response = response.json()
+    except Exception as e:
+        return None
+
+
 def fulfillMusicMetaData(musicFile, metaDataInfo):
     """
     填充歌曲元数据 不同平台返回的元数据不完整 需要单独处理
@@ -307,7 +326,6 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
     if fileType == None:
         return
     if fileType == 'flac':
-        simple = FLAC("/Volumes/data/Jay/周杰伦 - 反方向的钟.flac")
         music = FLAC(musicFile)
 
         if 'source_platform' not in music:

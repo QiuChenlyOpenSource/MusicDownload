@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-03-14 03:40:11
-#  @上次修改    : 2023/3/14 下午3:40
+#  @修改时间    : 2023-07-28 09:37:45
+#  @上次修改    : 2023/7/28 下午9:37
 
 import json
 import uuid
@@ -324,10 +324,82 @@ class QQMusicApi(BaseApi):
         """
         return EncryptTools.testGetLink(mid, quality=sourceType)
 
+    def getQQMusicSearchV2(self, key: str = "", page: int = 1, size: int = 30):
+        url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
+
+        payload = {"music.search.SearchCgiService.DoSearchForQQMusicDesktop": {
+            "method": "DoSearchForQQMusicDesktop",
+            "module": "music.search.SearchCgiService",
+            "param": {
+                "search_type": 0,
+                "query": key,
+                "page_num": page,
+                "num_per_page": size
+            }
+        }}
+        headers = {
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "referer": "https://i.y.qq.com",
+            "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
+            "content-type": "application/json",
+            "accept": "application/json",
+            "Host": "u.y.qq.com",
+            "Connection": "Keep-Alive"
+        }
+
+        res = self.QQHttpServer.getHttp2Json(
+            url,
+            1,
+            payload,
+            headers,
+        )
+        # print(res.text)
+        jsons = res.json()
+        # 开始解析QQ音乐的搜索结果
+        res = jsons["music.search.SearchCgiService.DoSearchForQQMusicDesktop"]["data"]
+        lst = res["body"]["song"]["list"]
+        meta = res["meta"]
+
+        # 数据清洗,去掉搜索结果中多余的数据
+        list_clear = []
+        for i in lst:
+            list_clear.append(
+                {
+                    "album": i["album"],
+                    "docid": i["docid"],
+                    "id": i["id"],
+                    "mid": i["mid"],
+                    "name": i["title"],
+                    "singer": i["singer"],
+                    "time_public": i["time_public"],
+                    "title": i["title"],
+                    "file": i["file"],
+                }
+            )
+
+        # rebuild json
+        # list_clear: 搜索出来的歌曲列表
+        # {
+        #   size 搜索结果总数
+        #   next 下一搜索页码 -1表示搜索结果已经到底
+        #   cur  当前搜索结果页码
+        # }
+        return {
+            "data": list_clear,
+            "page": {
+                "size": meta["sum"],
+                "next": meta["nextpage"],
+                "cur": meta["curpage"],
+                "searchKey": key,
+            },
+        }
+
     def getQQMusicSearch(
-        self, key: str = "", page: int = 1, size: int = 30
-    ) -> tuple[(dict, dict)]:
-        """搜索音乐
+            self, key: str = "", page: int = 1, size: int = 30
+    ) -> dict:
+        """
+        搜索音乐
+        此接口已废弃。请参考@getQQMusicSearchV2
 
         参数:
             key (str): 搜索关键词. 默认是 "".
@@ -336,6 +408,9 @@ class QQMusicApi(BaseApi):
         返回值:
             dict: 返回搜索列表
         """
+
+        return self.getQQMusicSearchV2(key, page, size)
+
         # base url
         url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
         # url = "https://u.y.qq.com/cgi-bin/musics.fcg" # 需要加密 懒得动了
@@ -657,7 +732,7 @@ class QQMusicApi(BaseApi):
             "req_1": {
                 "module": "musicToplist.ToplistInfoServer",
                 "method": "GetDetail",
-                "param": {"topid": int(_id), "offset": 0, "num": 100}, #, "period": "2023-07-01"},
+                "param": {"topid": int(_id), "offset": 0, "num": 100},  # , "period": "2023-07-01"},
             },
         }
 
