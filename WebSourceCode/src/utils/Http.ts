@@ -99,9 +99,19 @@ export const Api = {
       code: Number;
     }>("/status");
   },
-  async searchMusic(key: string, page: number, type = "qq", size = 30) {
-    let url = "/" + type + "/search/" + key + "/" + page + "/" + size;
+  async searchMusic(key: string, page: number, type = "qq", size = 30, extra = '') {
+    let url = "/" + type + "/search/" + key + "/" + page + "/" + size + extra;
     return this.get<SearchMusicResult>(url);
+  },
+  /**
+   * 获取酷我搜索token
+   * @returns 
+   */
+  async getKWToken() {
+    return this.get<{
+      code: number,
+      token: string
+    }>("/kw/search/getToken")
   },
   async searchMusicForMyFreeMp3(
     type = "myfreemp3",

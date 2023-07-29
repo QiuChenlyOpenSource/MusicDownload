@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - kw.py
-#  @修改时间    : 2023-03-13 11:07:40
-#  @上次修改    : 2023/3/13 下午11:07
+#  @修改时间    : 2023-07-28 11:32:28
+#  @上次修改    : 2023/7/28 下午11:32
 from flask import request
 
 from flaskSystem.src.Api.Kuwo import KwApi
@@ -16,21 +16,54 @@ mg = MiGu()
 myFreeMP3 = MyFreeMP3()
 
 
-@app.get("/kw/search/<searchKey>/<page>/<size>")
-def kwsearch(searchKey: str, page=1, size=100):
-    lst = kw.search_kw_mac(searchKey, int(page), int(size))  # Mac端搜索接口
+@app.get("/kw/search/<searchKey>/<page>/<size>/<rid>/<encId>")
+def kwsearch(searchKey: str, page=1, size=100,rid='', encId=''):
+    lst = kw.search_kw_h5(searchKey, int(page), int(size),rid,encId)  # Mac端搜索接口
     page = lst['page']
     return {
         'code': 200,
         'list': lst['data'],
         'page': page
     }
+    
+@app.get("/kw/search/getToken")
+def kw_get_token():
+    return {
+        'code': 200,
+        'token': kw.getInitializationToken()
+    }
 
 
 @app.get("/mg/search/<searchKey>/<page>/<size>")
 def mgsearch(searchKey: str, page=1, size=100):
-    lst = mg.search(searchKey, int(page), int(size))  # Mac端搜索接口
-    page = lst['page']
+    prefix = searchKey.split(":")
+    lst = None
+    if len(prefix) == 2:
+        command = prefix[0]
+        _id = prefix[1]
+        # 高级指令
+        if command == 'p':
+            pass
+            # 加载歌单
+        elif command == 'b':
+            # 加载专辑
+            lst = mg.getAlbumList(_id)
+        elif command == 'id':
+            # 指定单曲id
+            pass
+        elif command == 't':
+            # 加载排行版
+            pass
+        else:
+            lst = None
+    else:
+        lst = mg.search(searchKey, int(page), int(size))  # Mac端搜索接口
+    if lst is None:
+        lst = {
+            'data': []
+        }
+    else:
+        page = lst['page']
     return {
         'code': 200,
         'list': lst['data'],

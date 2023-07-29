@@ -19,6 +19,9 @@ import {
 
 //@ts-ignore
 import EncodeEx from "../utils/MyMp3.js";
+//@ts-ignore
+import encMD5 from "../utils/kw.js"
+
 import { ElMessage, ElNotification } from "element-plus";
 
 const { basicStore } = SystemStore();
@@ -111,7 +114,7 @@ const filterList = (singleMusic: SearchMusicResultSingle) => {
   return true;
 };
 
-const search = () => {
+const search = async () => {
   if (
     basicStore.searchHistory.find(
       (v, i, array) => v === basicStore.lastSearch
@@ -136,11 +139,24 @@ const search = () => {
       v: "beta",
     });
     Api.searchMusicForMyFreeMp3(basicStore.config.platform, data).then(resolve);
-  } else
+  }
+  else if (basicStore.config.platform === "kw") {
+    const token = await Api.getKWToken();
+    const result = encMD5(token.token)
+    console.log(token.token, result);
     Api.searchMusic(
       basicStore.lastSearch,
       music_current_page.value,
-      basicStore.config.platform
+      basicStore.config.platform,
+      30,
+      "/" + token.token + "/" + result
+    ).then(resolve);
+  }
+  else
+    Api.searchMusic(
+      basicStore.lastSearch,
+      music_current_page.value,
+      basicStore.config.platform,
     ).then(resolve);
 };
 

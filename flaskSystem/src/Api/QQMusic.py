@@ -325,38 +325,9 @@ class QQMusicApi(BaseApi):
         return EncryptTools.testGetLink(mid, quality=sourceType)
 
     def getQQMusicSearchV2(self, key: str = "", page: int = 1, size: int = 30):
-        url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
-
-        payload = {"music.search.SearchCgiService.DoSearchForQQMusicDesktop": {
-            "method": "DoSearchForQQMusicDesktop",
-            "module": "music.search.SearchCgiService",
-            "param": {
-                "search_type": 0,
-                "query": key,
-                "page_num": page,
-                "num_per_page": size
-            }
-        }}
-        headers = {
-            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "referer": "https://i.y.qq.com",
-            "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
-            "content-type": "application/json",
-            "accept": "application/json",
-            "Host": "u.y.qq.com",
-            "Connection": "Keep-Alive"
-        }
-
-        res = self.QQHttpServer.getHttp2Json(
-            url,
-            1,
-            payload,
-            headers,
-        )
-        # print(res.text)
-        jsons = res.json()
+        json_ = self.getQQSearchData(key, page, size)
         # 开始解析QQ音乐的搜索结果
-        res = jsons["music.search.SearchCgiService.DoSearchForQQMusicDesktop"]["data"]
+        res = json_["data"]
         lst = res["body"]["song"]["list"]
         meta = res["meta"]
 
@@ -393,6 +364,39 @@ class QQMusicApi(BaseApi):
                 "searchKey": key,
             },
         }
+        
+    def getQQSearchData(self, key,page,size): 
+        url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
+
+        payload = {"music.search.SearchCgiService.DoSearchForQQMusicDesktop": {
+            "method": "DoSearchForQQMusicDesktop",
+            "module": "music.search.SearchCgiService",
+            "param": {
+                "search_type": 0,
+                "query": key,
+                "page_num": page,
+                "num_per_page": size
+            }
+        }}
+        headers = {
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "referer": "https://i.y.qq.com",
+            "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
+            "content-type": "application/json",
+            "accept": "application/json",
+            "Host": "u.y.qq.com",
+            "Connection": "Keep-Alive"
+        }
+
+        res = self.QQHttpServer.getHttp2Json(
+            url,
+            1,
+            payload,
+            headers,
+        )
+        # print(res.text)
+        json_ = res.json()
+        return json_["music.search.SearchCgiService.DoSearchForQQMusicDesktop"]
 
     def getQQMusicSearch(
             self, key: str = "", page: int = 1, size: int = 30
