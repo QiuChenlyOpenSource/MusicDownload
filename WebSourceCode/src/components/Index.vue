@@ -30,7 +30,7 @@
         </div>
         <div class="home-page" @click="router.push('/download')">
           <i-carbon-download />
-          <span>下载列表</span>
+          <span>下载管理</span>
         </div>
       </div>
     </div>

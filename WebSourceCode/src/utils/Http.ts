@@ -184,4 +184,8 @@ export const Api = {
   esLogout() {
     return Api.get("/es/esLogout");
   },
+  // 本地文件管理接口
+  getLocalFiles() {
+    return Api.get<any>("/files/getAllFileList")
+  }
 };

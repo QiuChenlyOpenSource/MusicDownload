@@ -33,3 +33,11 @@ export interface InitAnonimous {
     createTime: number
     userId: number
 }
+
+export interface MediaQuery {
+    meta_support: string,
+    meta_option: string,
+    meta_types: string,
+    from: string,
+    to: string
+}

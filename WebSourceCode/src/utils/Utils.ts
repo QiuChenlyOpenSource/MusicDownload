@@ -31,3 +31,56 @@ export function timestampToTime(timestamp: number) {
 export const isType = <T>(props: any): props is T =>
   //@ts-ignore
   typeof (props as T)["js"] !== "undefined";
+
+export const platformList = [
+  {
+    name: "QQ音乐",
+    value: "qq",
+  },
+  {
+    name: "网易云音乐",
+    value: "wyy",
+  },
+  {
+    name: "酷我音乐",
+    value: "kw",
+  },
+  {
+    name: "咪咕音乐",
+    value: "mg",
+  },
+  {
+    name: "MyFreeMP3",
+    value: "myfreemp3",
+  },
+];
+
+export const platformListv2: any = {
+  "qq": "QQ音乐",
+  "wyy": "网易云音乐",
+  "kw": "酷我音乐",
+  "mg": "咪咕音乐",
+  "myfreemp3": "MyFreeMP3"
+}
+
+export const MetaInfomationSupport: any = {
+  "iTunes": "Apple Music",
+  "QQMusic": "QQ音乐"
+}
+
+export const MetaInfomationSupportTypes: any = {
+  "albumName": "专辑名称",
+  "songer": "歌手名称",
+  "title": "歌曲名称"
+}
+
+export const MetaInfomationSupportOptions: any = {
+  "reflect": {
+    name: "看作",
+    lint: "如果是"
+  },
+  "replace": {
+    name: "替换",
+    lint: "将字符"
+  }
+}

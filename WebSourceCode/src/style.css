@@ -53,7 +53,10 @@ html {
     --qiuchen-hover-text: rgba(0, 0, 0, 0.35);
     --qiuchen-normal-white: rgba(0, 0, 0, 0);
     --qiuchen-normal-black: rgba(0, 0, 0, 1);
-
+    --qiuchen-white-50: rgba(0,0,0,.5);
+    --qiuchen-black-50: rgba(255,255,255,.5);
+    --white:white;
+    --black:black;
 }
 
 html.dark {
@@ -61,6 +64,10 @@ html.dark {
     --qiuchen-text: rgba(215, 215, 215, 0.5);
     --qiuchen-text-15: rgba(215, 215, 215, 0.15);
     --qiuchen-hover-text: rgb(255, 255, 255, .8);
-    --qiuchen-normal-white: rgba(255, 255, 255, .5);
+    --qiuchen-normal-white: rgba(255, 255, 255, 0);
     --qiuchen-normal-black: rgba(255, 255, 255, 1);
+    --qiuchen-white-50: rgba(255,255,255,.5);
+    --qiuchen-black-50: rgba(0,0,0,.5);
+    --white:black;
+    --black:white;
 }

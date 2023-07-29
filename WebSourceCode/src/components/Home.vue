@@ -9,9 +9,11 @@
 
 <script setup lang="ts">
 import { Download, Switch } from "@element-plus/icons-vue";
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, watch, ref, onMounted } from "vue";
 import { SystemStore } from "@/store/SystemStore.js";
 import { Api } from "@/utils/Http";
+import { platformListv2, MetaInfomationSupport, MetaInfomationSupportOptions, MetaInfomationSupportTypes } from "@/utils/Utils";
+import { ElDivider } from "element-plus";
 
 const { basicStore } = SystemStore();
 
@@ -62,6 +64,63 @@ const enterClick = (ev: KeyboardEvent) => {
     customKey.value = "";
   }
 };
+
+const addFilter = function (obj: any) {
+  obj.metas.push({
+    meta_support: 'iTunes',
+    meta_option: 'reflect',
+    meta_types: 'albumName',
+    from: "",
+    to: ""
+  })
+}
+
+const addFilterBase = function () {
+  basicStore.MusicMetaPrepare.push({
+    platform: "mg",
+    metas: [{
+      meta_support: 'iTunes',
+      meta_option: 'reflect',
+      meta_types: 'albumName',
+      from: "",
+      to: ""
+    }]
+  })
+}
+
+const selectOptions = ref(false)
+const optionOps = ref({
+  title: "",
+  data: {} as any,
+  target: {} as any
+})
+
+let stopWatch: any = null;
+
+const showOptions = (selectData: any, callback: Function, lstData: any) => {
+  optionOps.value.data = lstData;
+  if (stopWatch !== null) stopWatch();
+  stopWatch = watch(optionOps, (nl, old) => {
+    callback(nl.target)
+  }, { deep: true })
+
+  optionOps.value.target = selectData;
+  selectOptions.value = true;
+}
+
+/**
+ * 格式化对象成可读性较高的对象
+ * @param objs 
+ */
+const parseKeys = (objs: any) => {
+  let obj = {} as any
+  for (let it in objs) {
+    // console.log(it);
+    obj[it] = objs[it]['name']
+  }
+  return obj
+}
+
 </script>
 
 <template>
@@ -124,6 +183,59 @@ const enterClick = (ev: KeyboardEvent) => {
             </div>
           </div>
         </el-card>
+
+        <el-card class="box-card">
+          <template #header>
+            <div class="card-header">
+              <span>元数据匹配</span>
+            </div>
+          </template>
+          <el-dialog class="dialog-attr" destroy-on-close align-center v-model="selectOptions"
+            :title="'请选择' + optionOps.title">
+            <el-select v-model="optionOps.target" placeholder="请选择接口" style="width: 100%">
+              <el-option v-for="(it, vl) in optionOps.data" :label="it" :value="vl" />
+            </el-select>
+          </el-dialog>
+          <div class="filter-area">
+            <div class="filter-list">
+              <div class="add-filter" v-for="(prepare, inx) in basicStore.MusicMetaPrepare">
+                从<span class="option-style"
+                  @click="showOptions(prepare.platform, (vl: string) => { prepare.platform = vl }, platformListv2)">
+                  {{ platformListv2[prepare.platform]
+                  }}
+                </span>下载后, 匹配元数据时执行:
+                <el-divider />
+                <div v-if="prepare.metas && prepare.metas.length === 0">此规则没有任何约束，请增加一条约束。</div>
+                <div class="extra-meta" v-for="(metas_instance, inx1) in prepare.metas">
+                  <div class="extra-info">
+                    用<span class="option-style"
+                      @click="showOptions(metas_instance.meta_support, (vl: string) => { metas_instance.meta_support = vl }, MetaInfomationSupport)">
+                      {{ MetaInfomationSupport[metas_instance.meta_support]
+                      }}
+                    </span>查询元数据时, 从{{ platformListv2[prepare.platform] }}下载歌曲的
+                    <span class="option-style"
+                      @click="showOptions(metas_instance.meta_types, (vl: string) => { metas_instance.meta_types = vl }, MetaInfomationSupportTypes)">
+                      {{ MetaInfomationSupportTypes[metas_instance.meta_types]
+                      }}
+                    </span>{{ MetaInfomationSupportOptions[metas_instance.meta_option]['lint'] }}
+                    <el-input v-model="metas_instance.from" placeholder="输入原始内容" />
+
+                    <span class="option-style"
+                      @click="showOptions(metas_instance.meta_option, (vl: string) => { metas_instance.meta_option = vl }, parseKeys(MetaInfomationSupportOptions))">
+                      {{ MetaInfomationSupportOptions[metas_instance.meta_option]["name"]
+                      }}
+                    </span>为<el-input v-model="metas_instance.to" placeholder="将替换的内容" /><br /><br />
+                    <el-button type="danger" @click="prepare.metas.splice(inx1, 1)">删除约束</el-button>
+                  </div>
+                </div>
+                <el-divider />
+                <el-button type="success" @click="addFilter(prepare)">添加约束</el-button>
+                <el-button type="danger" @click="basicStore.MusicMetaPrepare.splice(inx, 1)">删除规则</el-button>
+              </div>
+            </div>
+            <el-button type="success" @click="addFilterBase">添加新规则</el-button>
+          </div>
+        </el-card>
       </div>
     </div>
     <div class="button-bar">
@@ -178,6 +290,7 @@ const enterClick = (ev: KeyboardEvent) => {
     align-items: center;
     justify-content: center;
     border-bottom: solid 1px rgba(white, 0.1);
+    z-index: 1;
   }
 
   .safe-area {
@@ -235,6 +348,50 @@ const enterClick = (ev: KeyboardEvent) => {
 
     .el-button {
       min-width: 130px;
+    }
+  }
+
+  .meta-list {
+    margin-top: 10px;
+    border-radius: 8px;
+    padding: 10px;
+    border: solid 0.2px rgba($color: #000000, $alpha: .15);
+    box-shadow: 0 2px 5px rgba($color: #000000, $alpha: .1);
+  }
+
+  .extra-meta {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .extra-info {
+    display: inline-block;
+    margin-bottom: 10px;
+
+    .el-input {
+      width: auto;
+    }
+  }
+
+  .add-filter {
+    border: solid 1px var(--black);
+    padding: 10px;
+    border-radius: 4px;
+    // box-shadow: 0 5px 6px rgba($color: #000000, $alpha: .1);
+    margin-bottom: 10px;
+  }
+
+  .option-style {
+    border: solid 1px var(--qiuchen-white-50);
+    margin: 5px 10px;
+    padding: 5px 10px;
+    display: inline-block;
+    cursor: pointer;
+    transition: all .25s cubic-bezier(0.075, 0.82, 0.165, 1);
+
+    &:hover {
+      background-color: var(--black);
+      color: var(--white);
     }
   }
 }

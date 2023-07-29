@@ -22,34 +22,14 @@ import EncodeEx from "../utils/MyMp3.js";
 //@ts-ignore
 import encMD5 from "../utils/kw.js"
 
+import { platformList } from "@/utils/Utils";
+
 import { ElMessage, ElNotification } from "element-plus";
 
 const { basicStore } = SystemStore();
 const refbasicStore = ref2(basicStore);
 const music_current_page = ref(1);
 const headRef = ref();
-const apiList = ref([
-  {
-    name: "QQ音乐",
-    value: "qq",
-  },
-  {
-    name: "网易云音乐",
-    value: "wyy",
-  },
-  {
-    name: "酷我音乐",
-    value: "kw",
-  },
-  {
-    name: "咪咕音乐",
-    value: "mg",
-  },
-  {
-    name: "MyFreeMP3",
-    value: "myfreemp3",
-  },
-]);
 
 const searchByNetease = defineProps<{
   search: string | undefined;
@@ -284,7 +264,7 @@ const downloadAllPage = function () {
           @keyup.enter="handleSearch">
           <template #prepend>
             <el-select v-model="basicStore.config.platform" placeholder="请选择接口" style="width: 120px">
-              <el-option v-for="it in apiList" :label="it.name" :value="it.value" />
+              <el-option v-for="it in platformList" :label="it.name" :value="it.value" />
             </el-select>
           </template>
           <template #append>

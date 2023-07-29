@@ -150,7 +150,7 @@ class KwApi(BaseApi):
                 'size': "无",
                 'title': li['name'],
                 'singer': li['artist_name'],
-                'album': li['album_name'],
+                'album': li['album_name'].replace('&nbsp;',' '),
                 'time_publish': "无",
                 # 'hasLossless': li['hasLossless'],
                 'readableText': f"{li['artist_name']} - {li['name']}"

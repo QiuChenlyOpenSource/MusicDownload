@@ -17,9 +17,11 @@ from flaskSystem.App import Start  # 必须先加载他 这是初始化flask框�
 from flaskSystem.API.es import init as es  # 下面无需顺序
 from flaskSystem.API.kw import init as kw  # 下面无需顺序
 from flaskSystem.API.qq import init as qq  # es qq模块不分顺序
+from flaskSystem.API.files import init as files  # es qq模块不分顺序
 
 es()  # 加载API接口
 qq()
 kw()
+files() # 加载文件管理接口
 
 Start(args.port)  # 最后启动总函数

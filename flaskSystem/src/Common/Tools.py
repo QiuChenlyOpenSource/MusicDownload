@@ -524,6 +524,7 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                     # 艺术家图片:type=5或9
                     music.add_picture(im1)
         music.save()
+        # description 标签可以写入简介数据 暂时不做补充
         
         # fileName = musicFile.split("/")[-1]
         # fixName = musicFile.replace(fileName,"")

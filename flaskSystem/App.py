@@ -11,6 +11,7 @@ from concurrent.futures import Future
 
 from flask import Flask, request
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 
 from flaskSystem.src.Common.Concurrency import Downloader
 
@@ -80,20 +81,6 @@ def add():
 
 
 c = Downloader()
-c.initPool(16)
-
-if os.path.exists("config.cfg"):
-    with open("config.cfg", "r") as cfg:
-        cfg = cfg.read()
-        cfg = json.loads(cfg)
-        c.initPool(int(cfg['thread_num']))
-        if os.path.exists(cfg['download_locate']):
-            c.set_folder(cfg['download_locate'])
-        else:
-            print("路径不存在，使用默认下载目录:", c.get_folder())
-            save_config(c.get_folder(),c.getCurrentResize())
-
-
 
 def done(ret: Future):
     """
@@ -126,9 +113,44 @@ def executeFn(a1: str, a2: bool):
     return a1 + "a2 True" if a2 else "a2 False"
 
 
+# SocketIO 
+
+socketio = SocketIO()
+socketio.init_app(app, cors_allowed_origins='*')
+
+namespace = "qiuchenly"
+@socketio.on('connect',namespace=namespace)
+def connected_msg(socket):
+    print(f"Client connected",socket)
+    
+@socketio.on('disconnect', namespace=namespace)
+def disconnect_msg():
+    print('client disconnected.')
+
+@socketio.on('my_event', namespace=namespace)
+def mtest_message(message):
+    print(message)
+    emit('my_response', {'data': message['data'], 'count': 1})
+
+
+
 def Start(port):
+    c.initPool(16)
+    if os.path.exists("config.cfg"):
+        with open("config.cfg", "r") as cfg:
+            cfg = cfg.read()
+            cfg = json.loads(cfg)
+            c.initPool(int(cfg['thread_num']))
+            if os.path.exists(cfg['download_locate']):
+                c.set_folder(cfg['download_locate'])
+            else:
+                print("路径不存在，使用默认下载目录:", c.get_folder())
+                save_config(c.get_folder(),c.getCurrentResize())
+
+
     app.run(
         '0.0.0.0',
         port,
         debug=False
     )
+    socketio.run(app, host='0.0.0.0', port=port)

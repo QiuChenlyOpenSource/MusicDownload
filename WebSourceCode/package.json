@@ -14,7 +14,8 @@
     "crypto-js": "^4.1.1",
     "element-plus": "^2.3.8",
     "qrcode.vue": "^3.4.0",
-    "vue": "^3.3.4"
+    "vue": "^3.3.4",
+    "vue-socket.io": "^3.0.10"
   },
   "devDependencies": {
     "@iconify/json": "^2.2.93",
