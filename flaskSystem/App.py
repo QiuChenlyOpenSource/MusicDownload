@@ -41,6 +41,12 @@ def configSave():
     jsn = request.get_json()
     num = int(jsn['num'])
     location = jsn['folder']
+    save_config(location,num)
+    return {
+        'code': 200
+    }
+    
+def save_config(location,num):
     c.set_folder(location)
     c.initPool(num)
     with open("config.cfg", "w+") as cfg:
@@ -49,9 +55,6 @@ def configSave():
             "download_locate": location
         }))
         cfg.flush()
-    return {
-        'code': 200
-    }
 
 
 @app.get("/getConfig")
@@ -84,7 +87,12 @@ if os.path.exists("config.cfg"):
         cfg = cfg.read()
         cfg = json.loads(cfg)
         c.initPool(int(cfg['thread_num']))
-        c.set_folder(cfg['download_locate'])
+        if os.path.exists(cfg['download_locate']):
+            c.set_folder(cfg['download_locate'])
+        else:
+            print("路径不存在，使用默认下载目录:", c.get_folder())
+            save_config(c.get_folder(),c.getCurrentResize())
+
 
 
 def done(ret: Future):
