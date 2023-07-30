@@ -120,6 +120,19 @@ class KwApi(BaseApi):
         return cookie.get("BAIDU_RANDOM")
     
     def search_kw_h5(self, searchKey: str, page_num: int = 1, page_size=100,rid='',encId=''):
+        """
+        酷我h5端搜索接口
+
+        Args:
+            searchKey (str): 关键词
+            page_num (int, optional): 页码. Defaults to 1.
+            page_size (int, optional): 每页搜索数量. Defaults to 100.
+            rid (str, optional): 百度随机ID,用于加密计算. Defaults to ''.
+            encId (str, optional): 加密后的百度随机ID 加密算法逆向自酷我h5端. Defaults to ''.
+
+        Returns:
+            _type_: _description_
+        """
         url = "http://m.kuwo.cn/newh5app/api/mobile/v1/search/all"
 
         querystring = {"httpsStatus":"1","key":searchKey,'pn':page_num}

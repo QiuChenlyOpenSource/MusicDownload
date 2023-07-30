@@ -12,7 +12,7 @@ from flaskSystem.src.Api.BaseApi import BaseApi
 from flaskSystem.src.Common import EncryptTools, Http
 from flaskSystem.src.Types.Types import Songs
 from flask import current_app
-
+import base64
 
 class QQMusicApi(BaseApi):
     QQHttpServer = Http.HttpRequest()
@@ -27,6 +27,7 @@ class QQMusicApi(BaseApi):
 
     def getHead(self):
         return {
+            "authority": "u6.y.qq.com",
             "User-Agent": "QQ音乐/73222 CFNetwork/1406.0.2 Darwin/22.4.0".encode("utf-8"),
             "Accept": "*/*",
             "Accept-Language": "zh-CN,zh-Hans;q=0.9",
@@ -138,9 +139,19 @@ class QQMusicApi(BaseApi):
                 "tmeLoginType": "2",
             },
         }
-        d = self.getQQServersCallback(url, 1, payload)
-        d = d.json()
+        res = self.getQQServersCallback(url, 1, payload)
+        d = res.json()
         d = d["music.musichallSong.PlayLyricInfo.GetPlayLyricInfo"]["data"]
+        if d['lyric'] != '':
+            # "retcode": 0,
+            # "code": 0,
+            # "subcode": 0,
+            # {'retcode': -1901, 'code': -1901, 'subcode': -1901}
+            # 外语歌曲有翻译 但是👴不需要！
+            lyric = base64.b64decode(d['lyric'])
+            d = lyric.decode('utf-8')
+        else:
+            d = ''
         return d
 
     def getQQMusicMediaLyric(self, mid: str) -> dict:
@@ -707,6 +718,7 @@ class QQMusicApi(BaseApi):
             "data": list_clear,
             "page": {"size": len(list_clear), "next": "1", "cur": "1", "searchKey": ""},
         }
+    
 
     def parseQQMusicToplist(self, _id: str):
         """
@@ -775,8 +787,9 @@ class QQMusicApi(BaseApi):
             "data": list_clear,
             "page": {"size": len(list_clear), "next": "1", "cur": "1", "searchKey": ""},
         }
-
-    def getSingleMusicInfo(self, _id: str):
+        
+        
+    def getSingleMusicInfoAll(self,_id:str):
         """
         获取单曲歌曲信息
 
@@ -787,7 +800,6 @@ class QQMusicApi(BaseApi):
         返回:
 
         """
-        u = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
         # 这里有两种格式 一种是纯数字 一种是mid 所以判断是否可被int即可
 
@@ -797,29 +809,76 @@ class QQMusicApi(BaseApi):
         except Exception as e:
             sid = 0
             mid = _id
-
-        d = {
-            "get_song_detail": {
-                "module": "music.pf_song_detail_svr",
-                "method": "get_song_detail",
-                "param": {"song_id": sid, "song_mid": mid, "song_type": 0},
-            },
-            "comm": {
-                "g_tk": 0,
-                "uin": "",
-                "format": "json",
-                "ct": 6,
-                "cv": 80600,
-                "platform": "wk_v17",
-                "uid": "",
-                "guid": self.getUUID(),
-            },
-        }
-
-        r = self.getQQServersCallback(u, 1, d)
+            
+        # 切换接口
+        useV2 = False
+        if useV2:
+            url = "https://u6.y.qq.com/cgi-bin/musicu.fcg"
+            payload = {
+                "comm": {
+                    "format": "json",
+                    "inCharset": "utf-8",
+                    "outCharset": "utf-8",
+                    "notice": 0,
+                    "platform": "h5",
+                    "needNewCode": 1
+                },
+                "get_song_detail": {
+                    "module": "music.pf_song_detail_svr",
+                    "method": "get_song_detail",
+                    "param": {
+                        "song_id": sid, "song_mid": mid, "song_type": 0
+                    }
+                }
+            }
+            headers = {
+                "authority": "u6.y.qq.com",
+                "accept": "application/json",
+                "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+                "content-type": "application/json",
+                "origin": "https://i.y.qq.com",
+                "referer": "https://i.y.qq.com/",
+                "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/115.0.0.0"
+            }
+            r = self.QQHttpServer.getHttp2Json(url, 1, payload, headers)
+        else:
+            u = "https://u.y.qq.com/cgi-bin/musicu.fcg"
+            d = {
+                "comm": {
+                    "g_tk": 0,
+                    "uin": "",
+                    "format": "json",
+                    "ct": 6,
+                    "cv": 80600,
+                    "platform": "h5",
+                    "uid": "",
+                    "guid": self.getUUID(),
+                },
+                "get_song_detail": {
+                    "module": "music.pf_song_detail_svr",
+                    "method": "get_song_detail",
+                    "param": {
+                        "song_id": sid, "song_mid": mid, "song_type": 0
+                    },
+                },
+            }
+            r = self.getQQServersCallback(u, 1, d)
         r = r.json()
-        # print(r)
         get_song_detail = r["get_song_detail"]
+        return get_song_detail
+
+    def getSingleMusicInfo(self, _id: str):
+        """
+        获取单曲音乐详细信息
+
+        Args:
+            _id (str): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        get_song_detail = self.getSingleMusicInfoAll(_id)
+        # print(r)
         if get_song_detail["code"] == 0:
             i = get_song_detail["data"]["track_info"]
             lst = [
