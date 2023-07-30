@@ -11,6 +11,7 @@ from hashlib import md5
 from Crypto.Cipher import AES
 import base64
 import time as tm
+import binascii
 
 from flaskSystem.src.Common import Http
 
@@ -400,15 +401,15 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     platform = platform
     t2 = quality
     device = 'MI 14 Pro Max'
-    osVersion = '27'
+    osVersion = '13' #从sdkVersion修改为androidVersion
     time = str(int(tm.time()))
     # f389249d91bd845c9b817db984054cfb 1678713735 6562653262383463363633646364306534333663
-    lowerCase = hashMd5("f389249d91bd845c9b817db984054cfb" + time + "6562653262383463363633646364306534333663").lower()
+    lowerCase = hashMd5("6d849adb2f3e00d413fe48efbb18d9bb" + time + "6562653262383463363633646364306534333668").lower() # 更新参数
 
     s6 = "{\\\"method\\\":\\\"GetMusicUrl\\\",\\\"platform\\\":\\\"" + platform + "\\\",\\\"t1\\\":\\\"" + t1_MusicID + "\\\",\\\"t2\\\":\\\"" + t2 + "\\\"}"
-    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.0.V4\\\",\\\"vercode\\\":\\\"4100\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}"
+    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.2\\\",\\\"vercode\\\":\\\"4120\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}" # 更新app版本
     s8 = "{\n\t\"text_1\":\t\"" + s6 + "\",\n\t\"text_2\":\t\"" + s7 + "\",\n\t\"sign_1\":\t\"" + lowerCase + "\",\n\t\"time\":\t\"" + time + "\",\n\t\"sign_2\":\t\"" + hashMd5(
-        s6.replace("\\", "") + s7.replace("\\", "") + lowerCase + time + "NDRjZGIzNzliNzEx").lower() + "\"\n}"
+        s6.replace("\\", "") + s7.replace("\\", "") + lowerCase + time + "NDRjZGIzNzliNzEe").lower() + "\"\n}" # 更新param
 
     # 资源大师接口
     # s5 = hashMd5(
@@ -419,12 +420,11 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     #     s6.replace("\\", "") + s7.replace("\\", "") + s5 + time + "NDRjZGIzNzliNzEx").lower() + "\"\n}"
     # 资源大师接口结束
 
-    s8 = AESEncrypt(s8, "6480fedae539deb2")
-    s8 = byte2hex(s8)
-    s8 = byte2hex(s8.encode("utf-8")).encode("utf-8")
+    # 移除AES加密，只需要一遍hex
+    s8 = binascii.hexlify(s8.encode('utf-8')).decode('utf-8').upper().encode('utf-8')
     s8 = zlib.compress(s8)
     url = [
-        "http://app.kzti.top:1030/client/cgi-bin/api.fcg",
+        "http://gcsp.kzti.top:1030/client/cgi-bin/api.fcg", # 源app已更新地址
         "http://119.91.134.171:1030/client/cgi-bin/api.fcg",
         "http://106.52.68.150:1030/client/cgi-bin/api.fcg"  # 资源大师接口
     ]
