@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - QQMusic.py
-#  @修改时间    : 2023-07-28 09:37:45
-#  @上次修改    : 2023/7/28 下午9:37
+#  @修改时间    : 2023-07-30 09:53:12
+#  @上次修改    : 2023/7/30 下午9:53
 
 import json
 import uuid
@@ -13,6 +13,7 @@ from flaskSystem.src.Common import EncryptTools, Http
 from flaskSystem.src.Types.Types import Songs
 from flask import current_app
 import base64
+
 
 class QQMusicApi(BaseApi):
     QQHttpServer = Http.HttpRequest()
@@ -375,8 +376,8 @@ class QQMusicApi(BaseApi):
                 "searchKey": key,
             },
         }
-        
-    def getQQSearchData(self, key,page,size): 
+
+    def getQQSearchData(self, key, page, size):
         url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
         payload = {"music.search.SearchCgiService.DoSearchForQQMusicDesktop": {
@@ -648,6 +649,7 @@ class QQMusicApi(BaseApi):
                     "title": flacName,
                     "singer": f"{singer}",
                     "album": albumName,
+                    "albumMid": i["album"]["mid"],
                     "time_publish": time_publish,
                     "readableText": f'{time_publish} {singer} - {i["title"]} | {qStr}',
                 }
@@ -718,7 +720,6 @@ class QQMusicApi(BaseApi):
             "data": list_clear,
             "page": {"size": len(list_clear), "next": "1", "cur": "1", "searchKey": ""},
         }
-    
 
     def parseQQMusicToplist(self, _id: str):
         """
@@ -787,9 +788,43 @@ class QQMusicApi(BaseApi):
             "data": list_clear,
             "page": {"size": len(list_clear), "next": "1", "cur": "1", "searchKey": ""},
         }
-        
-        
-    def getSingleMusicInfoAll(self,_id:str):
+
+    def getAlbumInfomation(self, albumMid="002eFUFm2XYZ7z", albumID=0):
+        url = "https://u.y.qq.com/cgi-bin/musicu.fcg"
+
+        payload = {
+            "comm": {
+                "cv": 4747474,
+                "ct": 24,
+                "format": "json",
+                "inCharset": "utf-8",
+                "outCharset": "utf-8",
+                "notice": 0,
+                "platform": "yqq.json"
+            },
+            "AlbumInfoServer": {
+                "module": "music.musichallAlbum.AlbumInfoServer",
+                "method": "GetAlbumDetail",
+                "param": {
+                    "albumMid": albumMid,
+                    "albumID": albumID
+                }
+            }
+        }
+        headers = {
+            "authority": "u.y.qq.com",
+            "accept": "application/json",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+            "content-type": "application/json",
+            "origin": "https://y.qq.com",
+            "referer": "https://y.qq.com/",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.1901.183"
+        }
+        r = self.getQQServersCallback(url, 1, payload)
+        r = r.json()
+        return r
+
+    def getSingleMusicInfoAll(self, _id: str, albumMid=''):
         """
         获取单曲歌曲信息
 
@@ -809,7 +844,7 @@ class QQMusicApi(BaseApi):
         except Exception as e:
             sid = 0
             mid = _id
-            
+
         # 切换接口
         useV2 = False
         if useV2:
@@ -828,6 +863,14 @@ class QQMusicApi(BaseApi):
                     "method": "get_song_detail",
                     "param": {
                         "song_id": sid, "song_mid": mid, "song_type": 0
+                    }
+                },
+                "AlbumInfoServer": {
+                    "module": "music.musichallAlbum.AlbumInfoServer",
+                    "method": "GetAlbumDetail",
+                    "param": {
+                        "albumMid": albumMid,
+                        "albumID": 0
                     }
                 }
             }
@@ -861,10 +904,18 @@ class QQMusicApi(BaseApi):
                         "song_id": sid, "song_mid": mid, "song_type": 0
                     },
                 },
+                "AlbumInfoServer": {
+                    "module": "music.musichallAlbum.AlbumInfoServer",
+                    "method": "GetAlbumDetail",
+                    "param": {
+                        "albumMid": albumMid,
+                        "albumID": 0
+                    }
+                }
             }
             r = self.getQQServersCallback(u, 1, d)
         r = r.json()
-        get_song_detail = r["get_song_detail"]
+        get_song_detail = r
         return get_song_detail
 
     def getSingleMusicInfo(self, _id: str):
@@ -877,7 +928,7 @@ class QQMusicApi(BaseApi):
         Returns:
             _type_: _description_
         """
-        get_song_detail = self.getSingleMusicInfoAll(_id)
+        get_song_detail = self.getSingleMusicInfoAll(_id, '')["get_song_detail"]
         # print(r)
         if get_song_detail["code"] == 0:
             i = get_song_detail["data"]["track_info"]

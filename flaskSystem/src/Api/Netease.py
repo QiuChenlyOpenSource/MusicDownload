@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Netease.py
-#  @修改时间    : 2023-03-20 12:44:59
-#  @上次修改    : 2023/3/20 上午12:44
+#  @修改时间    : 2023-07-30 09:11:08
+#  @上次修改    : 2023/7/30 下午9:11
 import json
 import os
 import time
@@ -75,7 +75,7 @@ class Netease(BaseApi):
         return res
 
     def getAllMusicCloud(self, size=30):
-        u = f'/user/cloud?limit={size}&timestamp={time.time_ns()}'
+        u = f'/user/cloud?limit={size}&time={time.time_ns()}'
         r = self.http(u)
         res = r.json()
         # fee: enum,
@@ -108,7 +108,7 @@ class Netease(BaseApi):
         return self.http(u).json()
 
     def getUserDetail(self):
-        u = '/user/account'
+        u = '/user/account' + f"?time={time.time_ns()}"
         return self.http(u).json()
 
     def getUserLikeList(self, uid: str):

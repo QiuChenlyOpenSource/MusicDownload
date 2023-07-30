@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-30 07:09:19
-#  @上次修改    : 2023/7/30 下午7:09
+#  @修改时间    : 2023-07-30 10:37:05
+#  @上次修改    : 2023/7/30 下午10:37
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -150,9 +150,14 @@ def downSingle(music, download_home, config):
     link = None
     if platform == 'qq':
         musicid = music['musicid']
+        albumMid = music['albumMid']
+
+        info = QQApi.getAlbumInfomation(albumMid)
+        music['singer'] = info['AlbumInfoServer']['data']['singer']['singerList'][0]['name'] \
+            if info['AlbumInfoServer']['code'] != 104400 else music['singer']
         file = QQApi.getQQMusicFileName(music['prefix'], music['mid'], music['extra'])
         musicFileInfo = f"{music['singer']} - {music['title']} [{music['notice']}] {music['size']} - {file}"
-        link = handleQQ(music, musicFileInfo)
+        link = handleQQ(music, musicFileInfo)  # 由于QQ歌曲的特殊性 这里处理一下获取专辑艺术家信息
         super_music_info = {
             **music,
             'source_platform': "QQ",
@@ -339,16 +344,19 @@ def itunes_search_music_meta(albumName, songName, musicTitle):
         return None
 
 
-def search_qq_meta(albumName, songName, musicTitle, qqMusicID=None):
+def search_qq_meta(albumName, songName, musicTitle, qqMusicID=None, albumId=''):
     if qqMusicID:
-        detail = QQApi.getSingleMusicInfoAll(qqMusicID)
+        infoAll = QQApi.getSingleMusicInfoAll(qqMusicID, albumId)
+        detail = infoAll["get_song_detail"]
+        album = infoAll["AlbumInfoServer"]['data']
         if detail['code'] != 0:
             # 如果没找到任何有效信息 则返回None
             return None
         infos = detail['data']
-        print(albumName, songName, qqMusicID, "成功使用MusicID精确匹配到了QQ曲库信息。")
+        print(albumName, songName, musicTitle, qqMusicID, "成功使用MusicID精确匹配到了QQ曲库信息。")
         return {
             "album": infos['track_info']['album'],
+            "albumCollection": album,
             "info": infos['info'],
             'track_info': infos['track_info'],
             "extra": json.dumps(infos, ensure_ascii=False)
@@ -473,7 +481,7 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
             metaDataInfo['album'],
             music['artist'][0],
             music['title'][0]
-        )  # if not isQQMusicSource else None
+        ) if not isQQMusicSource else None
         if meta:
             albumCover = meta['artworkUrl100'].replace('100x100', '3000x3000')
             # print("albumCover = ",albumCover)
@@ -497,7 +505,8 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                 metaDataInfo['album'],
                 music['artist'][0],
                 music['title'][0],
-                metaDataInfo['source_platform_music_id'] if isQQMusicSource else None
+                metaDataInfo['source_platform_music_id'] if isQQMusicSource else None,
+                metaDataInfo['albumMid']
             )
 
             if meta:
@@ -519,15 +528,27 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                     # 专辑中歌曲的序号 iTunes里是最全的 qq搞什么鬼
                     music['trackNumber'] = str(meta['track_info']['index_album'])
 
+                    # 专辑描述
+                    music['DESCRIPTION'] = meta['albumCollection']['basicInfo']['desc']
+                    # 唱片公司
+                    music['LABEL'] = meta['albumCollection']['company']['name']
+                    # GENRE 流派
+                    music['GENRE'] = [it['name'] for it in meta['albumCollection']['basicInfo']['genres']]
+                    # 专辑艺术家
+                    music['albumartist'] = [it['name'] for it in meta['albumCollection']['singer']['singerList']]
+
+                    music['LANGUAGE'] = meta['albumCollection']['basicInfo']['language']
+
                     info = rebaseQQMuiscInfomation(meta['info'])
 
-                    music['artist'] = [it['value'] for it in info['JUMP_TO_SINGER'] if it['type'] == '演唱者']
+                    music['artist'] = [it['name'] for it in meta['track_info']['singer']]
 
-                    lyric = info['lyric']
-                    if len(lyric) > 0 and len(lyric) > 0:
-                        music["LYRICS"] = lyric[0]['value']
+                    if 'lyric' in info:
+                        lyric = info['lyric']
+                        if len(lyric) > 0 and len(lyric) > 0:
+                            music["LYRICS"] = lyric[0]['value']
 
-                    # 加入曲谱信息
+                    # 加入曲谱信息 QQ音乐源特有的钢琴曲谱
                     if 'OPERN' in info:
                         sheets = info['OPERN']
                         if len(sheets) > 0 and len(sheets) > 0:
@@ -540,8 +561,6 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                                 pic.mime = u"image/jpeg"
                                 im1 = pic
                                 music.add_picture(im1)
-
-
 
                 else:
                     music['DATE'] = meta['time_public']
