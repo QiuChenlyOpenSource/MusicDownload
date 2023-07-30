@@ -1,5 +1,5 @@
 {
-  "name": "icbcview",
+  "name": "MusicSourceCentral",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -20,7 +20,7 @@
   "devDependencies": {
     "@iconify/json": "^2.2.93",
     "@types/crypto-js": "^4.1.1",
-    "@types/node": "^20.4.4",
+    "@types/node": "^20.4.5",
     "@vitejs/plugin-vue": "^4.2.3",
     "@vue/compiler-sfc": "^3.3.4",
     "@vue/tsconfig": "^0.4.0",

@@ -25,8 +25,8 @@ const userStore = () => {
 };
 
 const config = {
-  // baseURL: "",
-  baseURL: "http://192.168.31.103:8899", // 本地测试时使用
+  baseURL: process.env.NODE_ENV === 'production' ? "" : "http://192.168.31.103:8899",
+  // baseURL: "", // 本地测试时使用
   timeout: 15000,
   headers: {
     "Content-Type": "multipart/form-data;application/json;charset=UTF-8;",

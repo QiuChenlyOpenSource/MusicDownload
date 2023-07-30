@@ -114,7 +114,7 @@ const UserFunction = {
 /**
  * 用户扫码监听
  */
-let waitScanInterval = -1;
+let waitScanInterval: any = null;
 
 onMounted(() => {
   if (!basicStore.netease.isLogin) {
@@ -266,58 +266,33 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
 
 <template>
   <div class="content">
-    <el-dialog
-      class="dialog-attr"
-      destroy-on-close
-      align-center
-      width="90%"
-      v-model="matchMusic"
-      :title="'查找歌曲 - ' + waitMatchMusic.title"
-    >
+    <el-dialog class="dialog-attr" destroy-on-close align-center width="90%" v-model="matchMusic"
+      :title="'查找歌曲 - ' + waitMatchMusic.title">
       <search-music :search="willSearchString" />
     </el-dialog>
     <div ref="head" class="head">
       网易云 -
       {{
         user.netease.value.isLogin
-          ? user.netease.value.user.profile.nickname
-          : "请登录"
+        ? user.netease.value.user.profile.nickname
+        : "请登录"
       }}
     </div>
-    <div
-      class="areas"
-      :style="{
-        height: 'calc(100vh - ' + paddingHeadHeight + 'px)',
-      }"
-    >
+    <div class="areas" :style="{
+          height: 'calc(100vh - ' + paddingHeadHeight + 'px)',
+        }">
       <div v-if="!user.netease.value.isLogin" class="no-login">
         <div>{{ tips }}</div>
-        <qrcode-vue
-          :value="'http://music.163.com/login?codekey=' + unikey"
-          :size="200"
-          level="H"
-        ></qrcode-vue>
+        <qrcode-vue :value="'http://music.163.com/login?codekey=' + unikey" :size="200" level="H"></qrcode-vue>
       </div>
       <div v-else class="login">
         <UserInfo :user-info="user.netease.value.user" />
         <div class="list-content">
-          <el-select-v2
-            filterable
-            class="playlist"
-            v-model="selectPlaylist"
-            value-key="value.id"
-            :options="mPlaylistDropdown"
-            placeholder="选择一个歌单"
-            @change="loadUserPlaylist"
-            size="large"
-          >
+          <el-select-v2 filterable class="playlist" v-model="selectPlaylist" value-key="value.id"
+            :options="mPlaylistDropdown" placeholder="选择一个歌单" @change="loadUserPlaylist" size="large">
             <template #default="{ item }">
               <div class="select-list">
-                <el-avatar
-                  size="small"
-                  class="list-img"
-                  :src="item.value.coverImgUrl"
-                />
+                <el-avatar size="small" class="list-img" :src="item.value.coverImgUrl" />
                 <div class="list-right">
                   <span class="list-name">{{ item.value.name }}</span>
                   <span class="list-size">{{ item.value.trackCount }}首</span>
@@ -325,114 +300,59 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
               </div>
             </template>
           </el-select-v2>
-          <span class="search-hint"
-            >结果列表[搜索到{{ totalSize }}条数据,当前第{{ page }}页]</span
-          >
+          <span class="search-hint">结果列表[搜索到{{ totalSize }}条数据,当前第{{ page }}页]</span>
           <div @click="logout">退出登录</div>
-          <el-table
-            class="my-tb"
-            :data="userPlaylistFetch"
-            style="width: 100%; z-index: 0"
-          >
-            <el-table-column
-              :formatter="
-                (row:NeteasePlayListSongsList) => {
-                  return timestampToTime(row.publishTime).split(' ')[0]
-                }
-              "
-              prop="publishTime"
-              label="发表时间"
-              width="120"
-            />
-            <el-table-column
-              :show-overflow-tooltip="true"
-              prop="docid"
-              label="版权"
-              width="100"
-            >
+          <el-table class="my-tb" :data="userPlaylistFetch" style="width: 100%; z-index: 0">
+            <el-table-column :formatter="(row: NeteasePlayListSongsList) => {
+              return timestampToTime(row.publishTime).split(' ')[0]
+            }
+              " prop="publishTime" label="发表时间" width="120" />
+            <el-table-column :show-overflow-tooltip="true" prop="docid" label="版权" width="100">
               <template #default="scope">
                 <div class="title-tip">
-                  <div
-                    class="fee-tip"
-                    :class="{
-                      'vip-tip': scope.row.fee === 1 || scope.row.fee === 4,
-                      'no-ip-tip': tb6V(scope.row.privileges) === 100,
-                      'vip-down': scope.row.fee === 8,
-                    }"
-                  >
+                  <div class="fee-tip" :class="{
+                    'vip-tip': scope.row.fee === 1 || scope.row.fee === 4,
+                    'no-ip-tip': tb6V(scope.row.privileges) === 100,
+                    'vip-down': scope.row.fee === 8,
+                  }">
                     {{ getFeeType(scope.row) }}
                   </div>
                 </div>
               </template>
             </el-table-column>
-            <el-table-column
-              :show-overflow-tooltip="true"
-              prop="title"
-              label="歌曲名"
-              min-width="300"
-            >
+            <el-table-column :show-overflow-tooltip="true" prop="title" label="歌曲名" min-width="300">
               <template #default="scope">
                 <div class="title-tip">
                   <div class="flac-tip" v-if="scope.row.extra === 'flac'">
                     无损
                   </div>
                   <div class="name">{{ scope.row.title }}</div>
-                  <MdiCloudCheckOutline
-                    v-if="scope.row.cloud"
-                    style="margin-left: 10px"
-                  />
+                  <MdiCloudCheckOutline v-if="scope.row.cloud" style="margin-left: 10px" />
                 </div>
               </template>
             </el-table-column>
-            <el-table-column
-              :show-overflow-tooltip="true"
-              :formatter="(row:NeteasePlayListSongsList) => {
-                  return row.author.map(v=>v.name).join(' / ')
-                }"
-              prop="singer.name"
-              label="艺术家"
-              width="200"
-            />
-            <el-table-column
-              :show-overflow-tooltip="true"
-              prop="album"
-              label="专辑"
-              width="200"
-            />
+            <el-table-column :show-overflow-tooltip="true" :formatter="(row: NeteasePlayListSongsList) => {
+              return row.author.map(v => v.name).join(' / ')
+            }" prop="singer.name" label="艺术家" width="200" />
+            <el-table-column :show-overflow-tooltip="true" prop="album" label="专辑" width="200" />
             <el-table-column fixed="right" label="操作">
               <template #default="scope">
-                <el-button
-                  :type="
-                    tb6V(scope.row.privileges) === 100 ? 'info' : 'primary'
-                  "
-                  size="small"
-                  @click="
-                    tb6V(scope.row.privileges) === 100
-                      ? null
-                      : handleDown(scope.row)
-                  "
-                  >下载
+                <el-button :type="tb6V(scope.row.privileges) === 100 ? 'info' : 'primary'
+                  " size="small" @click="
+    tb6V(scope.row.privileges) === 100
+      ? null
+      : handleDown(scope.row)
+    ">下载
                 </el-button>
-                <el-button
-                  v-if="tb6V(scope.row.privileges) === 100"
-                  type="warning"
-                  size="small"
-                  @click="handleMatch(scope.row)"
-                  >在线匹配
+                <el-button v-if="tb6V(scope.row.privileges) === 100" type="warning" size="small"
+                  @click="handleMatch(scope.row)">在线匹配
                 </el-button>
                 <!--                <el-button link type="primary" size="small">试听</el-button>-->
               </template>
             </el-table-column>
           </el-table>
-          <el-pagination
-            v-model:current-page="page"
-            @update:current-page="page_change"
-            background
-            class="tab-split"
-            :page-size="pageSize"
-            layout="prev, pager, next"
-            :total="totalSize"
-          />
+          <el-pagination v-model:current-page="page" @update:current-page="page_change" background class="tab-split"
+            :page-size="pageSize" layout="prev, pager, next" :total="totalSize" />
         </div>
       </div>
     </div>
@@ -460,8 +380,7 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
   flex-direction: row;
   align-items: center;
 
-  .name {
-  }
+  .name {}
 
   .flac-tip {
     font-size: 12px;
@@ -531,8 +450,7 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
   }
 }
 
-.no-login {
-}
+.no-login {}
 
 .dialog-attr {
   height: 80vh;
@@ -549,8 +467,7 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
   height: auto;
   align-items: center;
 
-  .list-img {
-  }
+  .list-img {}
 
   .list-right {
     margin-left: 10px;
@@ -573,7 +490,6 @@ const handleMatch = (song: NeteasePlayListSongsList) => {
     font-size: 6pt;
   }
 
-  .list-img {
-  }
+  .list-img {}
 }
 </style>

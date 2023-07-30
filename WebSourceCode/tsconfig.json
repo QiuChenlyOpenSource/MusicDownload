@@ -17,7 +17,8 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "unplugin-icons/types/vue"
+      "unplugin-icons/types/vue",
+      "node"
     ],
     "paths": {
       "@/*": [

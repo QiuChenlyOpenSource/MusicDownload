@@ -13,7 +13,9 @@ import { defineComponent, watch, ref, onMounted } from "vue";
 import { SystemStore } from "@/store/SystemStore.js";
 import { Api } from "@/utils/Http";
 import { platformListv2, MetaInfomationSupport, MetaInfomationSupportOptions, MetaInfomationSupportTypes } from "@/utils/Utils";
-import { ElDivider } from "element-plus";
+import { ElDivider, ElMessage } from 'element-plus';
+import { fa } from "element-plus/es/locale";
+import { ExecException } from "child_process";
 
 const { basicStore } = SystemStore();
 
@@ -123,6 +125,23 @@ const parseKeys = (objs: any) => {
   return obj
 }
 
+const saveLocalConfigurature = () => {
+  try {
+    basicStore.MusicMetaPrepare = JSON.parse(localConfiguration.value)
+    importorexport.value = false
+  } catch (error) {
+    console.log(error);
+    ElMessage({
+      type: "error",
+      message: '出现错误: ' + error
+    })
+  }
+}
+
+const loadLocalConfigurature = () => {
+  localConfiguration.value = JSON.stringify(basicStore.MusicMetaPrepare)
+  importorexport.value = true
+}
 </script>
 
 <template>
@@ -201,7 +220,11 @@ const parseKeys = (objs: any) => {
           <el-dialog class="dialog-attribute" destroy-on-close align-center v-model="importorexport" width="90%"
             :title="'导出或导入规则'">
 
-            <el-input v-model="localConfiguration" show-word-limit autosize placeholder="请粘贴json数据" type="textarea" />
+            <div class="dialog-cts">
+              <textarea v-model="localConfiguration" placeholder="请粘贴json数据">
+              </textarea>
+              <el-button type="primary" @click="saveLocalConfigurature">保存</el-button>
+            </div>
           </el-dialog>
           <div class="filter-area">
             <div class="filter-list">
@@ -242,7 +265,7 @@ const parseKeys = (objs: any) => {
             </div>
             <div>
               <el-button type="success" @click="addFilterBase">添加新规则</el-button>
-              <el-button type="primary" @click="importorexport = true">添加外部规则</el-button>
+              <el-button type="primary" @click="loadLocalConfigurature">添加外部规则</el-button>
             </div>
           </div>
         </el-card>
@@ -348,11 +371,43 @@ const parseKeys = (objs: any) => {
     padding: 10px;
   }
 
-  .dialog-attribute {
-    background-color: $ppp;
+  :deep(.el-dialog__body) {
+    padding: 10px;
+  }
 
-    :deep(.el-textarea) {
+  .dialog-cts {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+
+    textarea {
+      flex: 1;
+      margin-bottom: 10px;
+      resize: none;
+      overflow-y: scroll;
+      outline: none;
+      border: none;
+      border-radius: 8px;
       padding: 10px;
+      box-shadow: 0 0 10px rgba($color: #000000, $alpha: .15);
+    }
+
+    textarea::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+      border-radius: 10px;
+      background: black;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+      background: rgba(white, 0.4);
+      border-radius: 10px;
+    }
+
+    textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(white, 0.8);
     }
   }
 
