@@ -257,7 +257,7 @@ class KwApi(BaseApi):
             直链地址
         """
         willEnc = f'corp=kuwo&p2p=1&type=convert_url2&format=flac|mp3|aac&rid={mid}'
-        url = f'''http://nmobi.kuwo.cn/mobi.s?f=kuwo&q={self.__KuwoDES.base64_encrypt(willEnc)}'''
+        url = f'''http://mobi.kuwo.cn/mobi.s?f=kuwo&q={self.__KuwoDES.base64_encrypt(willEnc)}'''
         res = self.getUrl(url)
         link = subString(res.text, "url=", "\r\n")
         return link
