@@ -89,6 +89,8 @@ const addFilterBase = function () {
 }
 
 const selectOptions = ref(false)
+const importorexport = ref(false)
+const localConfiguration = ref("")
 const optionOps = ref({
   title: "",
   data: {} as any,
@@ -196,6 +198,11 @@ const parseKeys = (objs: any) => {
               <el-option v-for="(it, vl) in optionOps.data" :label="it" :value="vl" />
             </el-select>
           </el-dialog>
+          <el-dialog class="dialog-attribute" destroy-on-close align-center v-model="importorexport" width="90%"
+            :title="'导出或导入规则'">
+
+            <el-input v-model="localConfiguration" show-word-limit autosize placeholder="请粘贴json数据" type="textarea" />
+          </el-dialog>
           <div class="filter-area">
             <div class="filter-list">
               <div class="add-filter" v-for="(prepare, inx) in basicStore.MusicMetaPrepare">
@@ -233,7 +240,10 @@ const parseKeys = (objs: any) => {
                 <el-button type="danger" @click="basicStore.MusicMetaPrepare.splice(inx, 1)">删除规则</el-button>
               </div>
             </div>
-            <el-button type="success" @click="addFilterBase">添加新规则</el-button>
+            <div>
+              <el-button type="success" @click="addFilterBase">添加新规则</el-button>
+              <el-button type="primary" @click="importorexport = true">添加外部规则</el-button>
+            </div>
           </div>
         </el-card>
       </div>
@@ -327,6 +337,23 @@ const parseKeys = (objs: any) => {
     margin-bottom: 10px;
     display: inline-flex;
     flex-direction: column;
+  }
+
+  .box-card {
+    // padding: 10px;
+  }
+
+
+  :deep(.el-card__body) {
+    padding: 10px;
+  }
+
+  .dialog-attribute {
+    background-color: $ppp;
+
+    :deep(.el-textarea) {
+      padding: 10px;
+    }
   }
 
   .filter-area {
