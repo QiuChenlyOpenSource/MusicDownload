@@ -2,7 +2,7 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-30 10:37:05
+#  @修改时间    : 2023-07-30 10:37:03
 #  @上次修改    : 2023/7/30 下午10:37
 
 # 部分函数功能优化，错误修复
@@ -600,9 +600,9 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                     # 艺术家图片:type=5或9
                     music.add_picture(im1)
 
-        if 'source_platform' not in music:
+        # if 'source_platform' not in music:
             # 添加音乐元数据获取来源
-            music["source_platform"] = json.dumps({
+        music["source_platform"] = json.dumps({
                 'platform': metaDataInfo['source_platform'],
                 "musicId": metaDataInfo['source_platform_music_id'],
                 "productby": "秋城落叶无损音乐 https://github.com/QiuChenlyOpenSource/QQFlacMusicDownloader".encode(
