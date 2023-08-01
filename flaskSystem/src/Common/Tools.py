@@ -2,8 +2,8 @@
 #  @作者         : 秋城落叶(QiuChenly)
 #  @邮件         : qiuchenly@outlook.com
 #  @文件         : 项目 [qqmusic] - Tools.py
-#  @修改时间    : 2023-07-30 10:37:03
-#  @上次修改    : 2023/7/30 下午10:37
+#  @修改时间    : 2023-08-02 03:21:29
+#  @上次修改    : 2023/8/2 上午3:21
 
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
@@ -11,10 +11,13 @@
 import base64
 import json
 import os
+import re
 import threading
 import requests
 from mutagen.flac import FLAC, Picture
 from mutagen import id3
+from mutagen.id3 import ID3, APIC, USLT, TPE1, SYLT, TXXX, TPE2, TRCK, TDRC, TPUB, TIT2, TALB, TPOS, TCON, COMM, TLAN, \
+    Encoding
 from PIL import Image
 import io
 
@@ -412,16 +415,17 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
         tpe = mu.read(128)
         if tpe.startswith(b'fLaC'):
             fileType = 'flac'
+        elif tpe.startswith(b'ID3'):
+            fileType = 'mp3'
         else:
-            print("不是无损文件，跳过元数据写入。")
+            print("不是受支持的歌曲类型文件，跳过元数据写入。")
 
-    if fileType == None:
+    if fileType is None:
         return
-    if fileType == 'flac':
+    elif fileType == 'flac' or fileType == 'mp3':
         # music1 = FLAC("/Volumes/Disk1/周杰伦 - 晴天.flac")
-        music = FLAC(musicFile)
-
-        if 'LYRICS' not in music and 'lrcUrl' in metaDataInfo:
+        lyric = ""
+        if 'lrcUrl' in metaDataInfo:
             # 下载歌词
             lrc = metaDataInfo['lrcUrl']
             lrcText = requests.get(lrc).content
@@ -429,190 +433,367 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                 lrcText = lrcText.decode("utf-8")
             except Exception as e:
                 lrcText = ""
-            music["LYRICS"] = lrcText
+            lyric = lrcText
         elif 'lrcContent' in metaDataInfo:
             # lrcContent 设置用于额外处理歌词内容需要自定义转码的情况 比如qq歌词
-            music["LYRICS"] = metaDataInfo['lrcContent']
+            lyric = metaDataInfo['lrcContent']
         else:
             print("无法为这首歌嵌入歌词文件。")
 
         albumImage = None
         # 下载封面
         if 'albumImgs' in metaDataInfo:
-            albumImage = requests.get(metaDataInfo['albumImgs'][0]).content
+            albumImageBin = requests.get(metaDataInfo['albumImgs'][0]).content
+            pic = Picture()
+            pic.type = id3.PictureType.COVER_FRONT
+            pic.data = convert_webp_bytes2jpeg_bytes(albumImageBin)
+            pic.mime = u"image/jpeg"
+            albumImage = albumImageBin
 
-        music.clear_pictures()
-
+        # 歌手照片
+        singerImage = None
         if 'singerImgs' in metaDataInfo:
             # 下载歌手封面
-            singerImage = requests.get(metaDataInfo['singerImgs'][0]).content
+            singerImageBin = requests.get(metaDataInfo['singerImgs'][0]).content
             pic = Picture()
-            pic.data = convert_webp_bytes2jpeg_bytes(singerImage)
+            pic.data = convert_webp_bytes2jpeg_bytes(singerImageBin)
             pic.type = id3.PictureType.ARTIST
             pic.mime = u"image/jpeg"
-            music.add_picture(pic)
+            singerImage = pic
 
-        if 'songName' in metaDataInfo:
-            # 标题
-            music['title'] = metaDataInfo['songName']
-        else:
-            music['title'] = metaDataInfo['title']
+        # 歌曲名称
+        title = metaDataInfo['songName'] if 'songName' in metaDataInfo else metaDataInfo['title']
 
-        if 'artists' in metaDataInfo:
-            # 艺术家
-            music['artist'] = [it['name'] for it in metaDataInfo['artists']]
-            # 设置专辑艺术家让专辑中歌曲能完整显示出来
-            # TODO: 当存在多个专辑艺术家的时候无法确定谁才是此专辑主要作者 会引起分类错误 需要后期解决
-            music['albumartist'] = [it['name'] for it in metaDataInfo['artists']]
-        else:
-            music['artist'] = [metaDataInfo['singer']]
-            music['albumartist'] = metaDataInfo['singer']
+        artist = [it['name'] for it in metaDataInfo['artists']] if 'artists' in metaDataInfo else [
+            metaDataInfo['singer']]
+        # 设置专辑艺术家让专辑中歌曲能完整显示出来
+        # TODO: 当存在多个专辑艺术家的时候无法确定谁才是此专辑主要作者 会引起分类错误 需要后期解决
+        albumartist = [it['name'] for it in metaDataInfo['artists']] if 'artists' in metaDataInfo else [
+            metaDataInfo['singer']
+        ]
 
-        # 专辑
-        music['album'] = metaDataInfo['album']
-
+        album = metaDataInfo['album']
         # 备份音乐平台完整的元数据信息 方便用于后期二次处理
         extra_info_full = ""
+        date = ''
+        trackNumber = ''
+        description = None
+        label = None
+        gener = []
+        LANGUAGE = None
+        otherImages = []
+        discNumber = '1'
+        trackCount = None
+        discCount = None
 
         isQQMusicSource = metaDataInfo['source_platform'] == "QQ"
 
-        # 测试iTunes元数据
-        meta = itunes_search_music_meta(
-            metaDataInfo['album'],
-            music['artist'][0],
-            music['title'][0]
-        ) if not isQQMusicSource else None
-        if meta:
-            albumCover = meta['artworkUrl100'].replace('100x100', '3000x3000')
-            # print("albumCover = ",albumCover)
+        # 如果是QQ源则有完整的元数据信息 所以我直接写入这个信息
+        if isQQMusicSource:
+            meta = search_qq_meta(
+                metaDataInfo['album'],
+                artist[0],
+                title,
+                metaDataInfo['source_platform_music_id'],
+                metaDataInfo['albumMid']
+            )
+            extra_info_full = meta["extra"]
+            date = meta['track_info']['time_public']
+            # 专辑中歌曲的序号 iTunes里是最全的 qq搞什么鬼
+            trackNumber = str(meta['track_info']['index_album'])
+
+            # 专辑描述
+            description = meta['albumCollection']['basicInfo']['desc']
+            # 唱片公司
+            label = meta['albumCollection']['company']['name']
+            # GENRE 流派
+            gener = [it['name'] for it in meta['albumCollection']['basicInfo']['genres']]
+            # 专辑艺术家
+            albumartist = [it['name'] for it in meta['albumCollection']['singer']['singerList']]
+
+            LANGUAGE = meta['albumCollection']['basicInfo']['language']
+
+            info = rebaseQQMuiscInfomation(meta['info'])
+
+            artist = [it['name'] for it in meta['track_info']['singer']]
+
+            if 'lyric' in info:
+                lyric = info['lyric']
+                if len(lyric) > 0:
+                    lyric = lyric[0]['value']
+
+            # 加入曲谱信息 QQ音乐源特有的钢琴曲谱
+            if 'OPERN' in info:
+                sheets = info['OPERN']
+                if len(sheets) > 0 and len(sheets) > 0:
+                    opern = [d['picurl'] for d in sheets]
+                    for img in opern:
+                        albumCoverBin = requests.get(img).content
+                        pic = Picture()
+                        pic.type = id3.PictureType.OTHER
+                        pic.data = albumCoverBin
+                        pic.mime = u"image/jpeg"
+                        im1 = pic
+                        otherImages.append(im1)
+
+            albumCover = f'https://y.qq.com/music/photo_new/T002R800x800M000{meta["album"]["pmid"]}.jpg'
             albumCoverBin = requests.get(albumCover).content
             pic = Picture()
             pic.type = id3.PictureType.COVER_FRONT
             pic.data = albumCoverBin
             pic.mime = u"image/jpeg"
-            im1 = pic
-            music.add_picture(im1)
 
-            music['DATE'] = meta['releaseDate']
-            music['trackNumber'] = str(meta['trackNumber'])
-            music['trackCount'] = str(meta['trackCount'])
-            music['discCount'] = str(meta['discCount'])
-            music['discNumber'] = str(meta['discNumber'])
-            music['GENRE'] = [meta['primaryGenreName']]
+            albumImage = pic
+            discNumber = '1'
+            date = meta['track_info']['time_public']
+            trackNumber = str(meta['track_info']['index_album'])
         else:
-            # 这里如果是从qq下载的音乐 则直接尝试让他指定mid直接获取qq音乐歌曲信息
-            meta = search_qq_meta(
-                metaDataInfo['album'],
-                music['artist'][0],
-                music['title'][0],
-                metaDataInfo['source_platform_music_id'] if isQQMusicSource else None,
-                metaDataInfo['albumMid'] if isQQMusicSource else None
+            # 测试iTunes元数据
+            meta = itunes_search_music_meta(
+                album,
+                artist[0],
+                title
             )
-
             if meta:
-                albumCover = f'https://y.qq.com/music/photo_new/T002R800x800M000{meta["album"]["pmid"]}.jpg'
+                albumCover = meta['artworkUrl100'].replace('100x100', '3000x3000')
+                # print("albumCover = ",albumCover)
                 albumCoverBin = requests.get(albumCover).content
                 pic = Picture()
                 pic.type = id3.PictureType.COVER_FRONT
                 pic.data = albumCoverBin
                 pic.mime = u"image/jpeg"
-                im1 = pic
-                music.add_picture(im1)
-
-                music['discNumber'] = '1'
-
-                # 如果是QQ源则有完整的元数据信息 所以我直接写入这个信息
-                if isQQMusicSource:
-                    extra_info_full = meta["extra"]
-                    music['DATE'] = meta['track_info']['time_public']
-                    # 专辑中歌曲的序号 iTunes里是最全的 qq搞什么鬼
-                    music['trackNumber'] = str(meta['track_info']['index_album'])
-
-                    # 专辑描述
-                    music['DESCRIPTION'] = meta['albumCollection']['basicInfo']['desc']
-                    # 唱片公司
-                    music['LABEL'] = meta['albumCollection']['company']['name']
-                    # GENRE 流派
-                    music['GENRE'] = [it['name'] for it in meta['albumCollection']['basicInfo']['genres']]
-                    # 专辑艺术家
-                    music['albumartist'] = [it['name'] for it in meta['albumCollection']['singer']['singerList']]
-
-                    music['LANGUAGE'] = meta['albumCollection']['basicInfo']['language']
-
-                    info = rebaseQQMuiscInfomation(meta['info'])
-
-                    music['artist'] = [it['name'] for it in meta['track_info']['singer']]
-
-                    if 'lyric' in info:
-                        lyric = info['lyric']
-                        if len(lyric) > 0 and len(lyric) > 0:
-                            music["LYRICS"] = lyric[0]['value']
-
-                    # 加入曲谱信息 QQ音乐源特有的钢琴曲谱
-                    if 'OPERN' in info:
-                        sheets = info['OPERN']
-                        if len(sheets) > 0 and len(sheets) > 0:
-                            opern = [d['picurl'] for d in sheets]
-                            for img in opern:
-                                albumCoverBin = requests.get(img).content
-                                pic = Picture()
-                                pic.type = id3.PictureType.OTHER
-                                pic.data = albumCoverBin
-                                pic.mime = u"image/jpeg"
-                                im1 = pic
-                                music.add_picture(im1)
-
-                else:
-                    music['DATE'] = meta['time_public']
-                    music['trackNumber'] = str(meta['index_album'])
+                albumImage = pic
+                date = meta['releaseDate']
+                trackNumber = str(meta['trackNumber'])
+                trackCount = str(meta['trackCount'])
+                discCount = str(meta['discCount'])
+                discNumber = str(meta['discNumber'])
+                gener = [meta['primaryGenreName']]
+            else:
+                meta = search_qq_meta(
+                    metaDataInfo['album'],
+                    artist[0],
+                    title
+                )
+                if meta:
+                    albumCover = f'https://y.qq.com/music/photo_new/T002R800x800M000{meta["album"]["pmid"]}.jpg'
+                    albumCoverBin = requests.get(albumCover).content
+                    pic = Picture()
+                    pic.type = id3.PictureType.COVER_FRONT
+                    pic.data = albumCoverBin
+                    pic.mime = u"image/jpeg"
+                    albumImage = pic
+                    discNumber = '1'
+                    date = meta['time_public']
+                    trackNumber = str(meta['index_album'])
                     # music['trackCount'] = str(meta['index_album'])
                     # music['discCount'] =  str(meta['discCount'])
                     # music['discNumber'] = str(meta['index_cd'])
                     # music['GENRE'] = [meta['primaryGenreName']]
-            else:
-                print(metaDataInfo['album'],
-                      music['artist'][0],
-                      music['title'][0], "很遗憾，只能写入基本数据信息.")
-                if albumImage:
-                    pic = Picture()
-                    pic.type = id3.PictureType.COVER_FRONT
-                    pic.data = convert_webp_bytes2jpeg_bytes(albumImage)
-                    pic.mime = u"image/jpeg"
-                    im1 = pic
-                    # 在使用Mutagen库向音频文件添加图片元数据时,type参数表示图片的类型,主要有以下几种:
-                    #
-                    # 0 - 其他
-                    # 1 - 32x32像素 PNG 文件图标
-                    # 2 - 其他文件图标
-                    # 3 - 前封面
-                    # 4 - 后封面
-                    # 5 - 素材(艺术家/表演者/剧组照片)
-                    # 6 - 录音师/录音室/制作人/指挥照片
-                    # 7 - 演出画面或电影/视频画面截图
-                    # 8 - 鱼眼图的缩图
-                    # 9 - 艺术家/表演者照片
-                    # 10 - 发行商/制作商徽标
-                    # 11 - 海报或横幅
-                    # 所以,常见的使用场景是:
-                    #
-                    # 专辑封面:type=3(前封面)
-                    # 歌曲封面:type=3(前封面)
-                    # 艺术家图片:type=5或9
-                    music.add_picture(im1)
+                else:
+                    print(metaDataInfo['album'],
+                          artist[0],
+                          title, "很遗憾，只能写入基本数据信息.")
 
+        source_platform = json.dumps({
+            'platform': metaDataInfo['source_platform'],
+            "musicId": metaDataInfo['source_platform_music_id'],
+            "productby": "秋城落叶无损音乐 https://github.com/QiuChenlyOpenSource/QQFlacMusicDownloader".encode(
+                "utf-8").decode(),
+            "extra_info_full": extra_info_full.encode("utf-8").decode()
+        }, ensure_ascii=False)
         # if 'source_platform' not in music:
-            # 添加音乐元数据获取来源
-        music["source_platform"] = json.dumps({
-                'platform': metaDataInfo['source_platform'],
-                "musicId": metaDataInfo['source_platform_music_id'],
-                "productby": "秋城落叶无损音乐 https://github.com/QiuChenlyOpenSource/QQFlacMusicDownloader".encode(
-                    "utf-8").decode(),
-                "extra_info_full": extra_info_full.encode("utf-8").decode()
-            }, ensure_ascii=False)
-        music.save()
-        # description 标签可以写入简介数据 暂时不做补充
-
+        # 添加音乐元数据获取来源
+        write_metadata_information(
+            1 if fileType == 'flac' else 2,
+            musicFile,
+            lyric,
+            album,
+            date,
+            title,
+            artist,
+            albumartist,
+            trackNumber,
+            discNumber,
+            trackCount,
+            discCount,
+            description,
+            label,
+            gener,
+            LANGUAGE,
+            singerImage,
+            albumImage,
+            otherImages,
+            source_platform
+        )
         # fileName = musicFile.split("/")[-1]
         # fixName = musicFile.replace(fileName,"")
         # fixName  = fixName+ meta['artistName']+" - " +meta['trackCensoredName']+".flac"
         # os.rename(musicFile,fixName)
+
+
+def write_metadata_information(
+        type: int,
+        musicFile: str,  # 文件路径
+        lyric: str,  # 歌词信息
+        album: str,  # 专辑名称,
+        date: str,  # 发布年代
+        title: str,  # 歌曲名称
+        artist: list[str],  # 艺术家
+        albumArtist: list[str],  # 专辑艺术家
+        trackNumber,  # CD中的曲目序号
+        discNumber,  # CD 磁碟序号
+        trackCount,  # CD 中曲目总数量 Apple Music 特有
+        discCount,  # CD 磁碟总数量 Apple Music 特有
+        description,  # 专辑介绍
+        publishCompany,  # 唱片公司
+        gener: list[str],  # 流派 数组
+        LANGUAGE,  # 语种
+        singerImage,  # 歌手照片 数组
+        albumImage,  # 专辑封面
+        attachmentImgs,  # 其他图片 数组
+        source_platform,  # 附加信息
+):
+    """
+
+    Args:
+        type: 1=Flac,2=mp3 可扩展
+        musicFile:
+        lyric:
+        album:
+        date:
+        title:
+        artist:
+        albumArtist:
+        trackNumber:
+        discNumber:
+        description:
+        publishCompany:
+        gener:
+        LANGUAGE:
+        singerImage:
+        albumImage:
+        attachmentImgs:
+        source_platform:
+
+    Returns:
+
+    """
+    music = None
+    if type == 1:
+        music = FLAC(musicFile)
+        if 'LYRICS' not in music:
+            music["LYRICS"] = lyric  # 写入歌词
+        music['title'] = title
+
+        # 艺术家
+        music['artist'] = artist
+        # 设置专辑艺术家让专辑中歌曲能完整显示出来
+        music['albumartist'] = albumArtist
+        # 专辑
+        music['album'] = album
+        music['DATE'] = date
+        music['trackNumber'] = trackNumber
+        music['discNumber'] = discNumber
+        if trackCount: music['trackCount'] = trackCount
+        if discCount: music['discCount'] = discCount
+        if description: music['DESCRIPTION'] = description
+        if publishCompany: music['LABEL'] = publishCompany
+        music['GENRE'] = gener
+        if LANGUAGE: music['LANGUAGE'] = LANGUAGE
+
+        music.clear_pictures()
+
+        # 在使用Mutagen库向音频文件添加图片元数据时,type参数表示图片的类型,主要有以下几种:
+        #
+        # 0 - 其他
+        # 1 - 32x32像素 PNG 文件图标
+        # 2 - 其他文件图标
+        # 3 - 前封面
+        # 4 - 后封面
+        # 5 - 素材(艺术家/表演者/剧组照片)
+        # 6 - 录音师/录音室/制作人/指挥照片
+        # 7 - 演出画面或电影/视频画面截图
+        # 8 - 鱼眼图的缩图
+        # 9 - 艺术家/表演者照片
+        # 10 - 发行商/制作商徽标
+        # 11 - 海报或横幅
+        # 所以,常见的使用场景是:
+        #
+        # 专辑封面:type=3(前封面)
+        # 歌曲封面:type=3(前封面)
+        # 艺术家图片:type=5或9
+        music.add_picture(albumImage)
+        if singerImage: music.add_picture(singerImage)
+        # 加入其他图片
+        for imgs in attachmentImgs:
+            if imgs: music.add_picture(imgs)
+
+        music["source_platform"] = source_platform
+    elif type == 2:
+        music = ID3(musicFile)
+        music.clear()
+        # 加入自定义标签头
+        music["TXXX"] = TXXX(encoding=3, desc="source_platform", text=source_platform)
+
+        music["TIT2"] = TIT2(encoding=3, text=title)
+
+        # 提取时间戳和歌词  
+        if lyric: music.setall("USLT", [USLT(encoding=Encoding.UTF8, lang='chi', format=2, type=1, text=lyric)])
+
+        # 写入流派
+        if gener: music["TCON"] = TCON(encoding=3, text=gener)
+
+        # 写入作曲家
+        # music["TCOM"] = TCOM(encoding=3, text="John Smith")
+
+        music["TPOS"] = TPOS(encoding=3, text=f'{discNumber}/{discCount}' if discCount else f'{discNumber}/1')
+
+        # 写入歌手
+        music["TPE1"] = TPE1(encoding=3, text=artist)
+
+        # 专辑名称
+        music["TALB"] = TALB(encoding=3, text=album)
+
+        # 专辑艺术家
+        music["TPE2"] = TPE2(encoding=3, text=albumArtist)
+
+        # 发布日期
+        music["TDRC"] = TDRC(encoding=3, text=date)
+
+        # CD曲子序号
+        music["TRCK"] = TRCK(encoding=3, text=trackNumber)
+
+        # 歌曲介绍
+        if description: music["COMM"] = COMM(encoding=3, lang='zho', desc='', text=description)
+
+        # 语言
+        if LANGUAGE: music["TLAN"] = TLAN(encoding=3, text=LANGUAGE)
+
+        # 发布公司
+        if publishCompany: music["TPUB"] = TPUB(encoding=3, text=publishCompany)
+
+        # 在MP3的APIC框架中,type字段用于表示图片的类型,主要有以下几种:
+
+        # 0 - 其他
+        # 1 - 32x32像素的文件图标
+        # 2 - 其他文件图标
+        # 3 - 前面板封面图片
+        # 4 - 后面板封面图片
+        # 5 - 叠加图片
+        # 6 - 插图
+        # 7 - 歌手/表演者图片
+        # 8 - 在电视屏幕捕获的图片
+        # 9 - 光碟的激光雕刻图象
+        # 10 - 媒体创作者/艺术家图片
+        # 11 - 录音场所图片
+        # 12 - 在活动过程中拍摄的图片
+        # 写入封面图片
+        music["APIC"] = APIC(encoding=3, mime='image/jpeg', type=3, desc='Cover', data=albumImage.data)
+
+        # 写入歌手图片
+        if singerImage: music["APIC"] = APIC(encoding=3, mime='image/jpeg', type=7, desc='Singer A', data=singerImage)
+    else:
+        return None
+    music.save()
+    pass
