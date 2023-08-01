@@ -8,15 +8,13 @@
 # 部分函数功能优化，错误修复
 #  @作者         : QingXuDw
 #  @邮件         : wangjingye55555@outlook.com
-import base64
 import json
 import os
-import re
 import threading
 import requests
 from mutagen.flac import FLAC, Picture
 from mutagen import id3
-from mutagen.id3 import ID3, APIC, USLT, TPE1, SYLT, TXXX, TPE2, TRCK, TDRC, TPUB, TIT2, TALB, TPOS, TCON, COMM, TLAN, \
+from mutagen.id3 import ID3, APIC, USLT, TPE1, TXXX, TPE2, TRCK, TDRC, TPUB, TIT2, TALB, TPOS, TCON, COMM, TLAN, \
     Encoding
 from PIL import Image
 import io
@@ -448,7 +446,7 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
             pic.type = id3.PictureType.COVER_FRONT
             pic.data = convert_webp_bytes2jpeg_bytes(albumImageBin)
             pic.mime = u"image/jpeg"
-            albumImage = albumImageBin
+            albumImage = pic
 
         # 歌手照片
         singerImage = None
@@ -792,7 +790,7 @@ def write_metadata_information(
         music["APIC"] = APIC(encoding=3, mime='image/jpeg', type=3, desc='Cover', data=albumImage.data)
 
         # 写入歌手图片
-        if singerImage: music["APIC"] = APIC(encoding=3, mime='image/jpeg', type=7, desc='Singer A', data=singerImage)
+        if singerImage: music["APIC"] = APIC(encoding=3, mime='image/jpeg', type=7, desc='', data=singerImage)
     else:
         return None
     music.save()
