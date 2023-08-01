@@ -334,8 +334,7 @@ def itunes_search_music_meta(albumName, songName, musicTitle):
                 artistName = meta['collectionArtistName']
             else:
                 artistName = meta['artistName']
-            if meta[
-                'collectionCensoredName'] == albumName and artistName == songName and trackCensoredName == musicTitle1:
+            if artistName == songName and trackCensoredName == musicTitle1:
                 print(albumName, songName, musicTitle1, "成功精确匹配到了iTunes曲库信息。")
                 return meta
         print(albumName, songName, musicTitle1, "没有匹配到iTunes曲库中的信息。")
