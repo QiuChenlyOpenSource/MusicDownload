@@ -506,7 +506,7 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
                 music['artist'][0],
                 music['title'][0],
                 metaDataInfo['source_platform_music_id'] if isQQMusicSource else None,
-                metaDataInfo['albumMid']
+                metaDataInfo['albumMid'] if isQQMusicSource else None
             )
 
             if meta:
