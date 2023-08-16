@@ -15,6 +15,7 @@ class Downloader():
         self.mConcurrentPool: ThreadPoolExecutor = None
         self.mPoolThread = []
         self.folder = ''
+        self.save_lyric = False
         self.set_folder(os.getcwd() + '/music/')
 
     def set_folder(self, folder):
@@ -44,6 +45,20 @@ class Downloader():
         # for th in concurrent.futures.as_completed(pollCache):
         #     song = th.result()
         self.mConcurrentPool = ThreadPoolExecutor(max_workers=max_works)
+
+    def set_lyric(self, save_lyric: bool):
+        """
+        设置是否保存歌词
+        Args:
+            save_lyric: 是否保存歌词
+
+        Returns:
+
+        """
+        self.save_lyric = save_lyric
+    
+    def get_lyric(self):
+        return self.save_lyric
 
     def addTask(self, callback, fn, *args, **kwargs, ):
         t = self.mConcurrentPool.submit(fn, *args, **kwargs)

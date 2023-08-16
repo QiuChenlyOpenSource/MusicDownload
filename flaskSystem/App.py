@@ -42,18 +42,21 @@ def configSave():
     jsn = request.get_json()
     num = int(jsn['num'])
     location = jsn['folder']
-    save_config(location,num)
+    savelyric = jsn['lyric']
+    save_config(location,num,savelyric)
     return {
         'code': 200
     }
     
-def save_config(location,num):
+def save_config(location,num,savelyric):
     c.set_folder(location)
     c.initPool(num)
+    c.set_lyric(savelyric)
     with open("config.cfg", "w+") as cfg:
         cfg.write(json.dumps({
             "thread_num": num,
-            "download_locate": location
+            "download_locate": location,
+            "save_lyric": savelyric
         }))
         cfg.flush()
 
@@ -62,7 +65,8 @@ def save_config(location,num):
 def getConfig():
     return {
         'num': c.getCurrentResize(),
-        'folder': c.get_folder()
+        'folder': c.get_folder(),
+        'lyric': c.get_lyric()
     }
 
 

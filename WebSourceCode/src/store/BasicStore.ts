@@ -41,6 +41,7 @@ export const BasicStore = defineStore("basicStore", {
         concurrency: {
           num: 16,
           downloadFolder: "",
+          saveLyric: false,
         },
         platform: "qq",
       },
