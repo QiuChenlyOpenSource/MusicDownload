@@ -140,11 +140,11 @@ export const Api = {
       config: config,
     });
   },
-  setBaseConfig(param: { folder: string; num: number }) {
+  setBaseConfig(param: { folder: string; num: number ; lyric: boolean}) {
     return this.post("/config", param);
   },
   getBaseConfig() {
-    return this.get<{ folder: string; num: number }>("/getConfig");
+    return this.get<{ folder: string; num: number ; lyric: boolean}>("/getConfig");
   },
   getNeteaseQRCode() {
     return this.get<{

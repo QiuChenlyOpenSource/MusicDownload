@@ -23,6 +23,7 @@ const save_config = () => {
   Api.setBaseConfig({
     num: basicStore.config.concurrency.num,
     folder: basicStore.config.concurrency.downloadFolder,
+    lyric: basicStore.config.concurrency.saveLyric
   }).then((r) => { });
 };
 
@@ -40,6 +41,7 @@ const loadConfig = () => {
   Api.getBaseConfig().then((r) => {
     basicStore.config.concurrency.num = r.num;
     basicStore.config.concurrency.downloadFolder = r.folder;
+    basicStore.config.concurrency.saveLyric = r.lyric;
   });
 };
 
@@ -180,6 +182,9 @@ const loadLocalConfigurature = () => {
               <div>下载目录</div>
               <el-input v-model="basicStore.config.concurrency.downloadFolder" placeholder="输入下载目录路径"
                 :prefix-icon="Download" />
+            </div>
+            <div class="threadControl">
+              <el-checkbox v-model="basicStore.config.concurrency.saveLyric" label="单独保存歌词文件" />
             </div>
             <div class="actions">
               <el-button type="success" @click="save_config">保存</el-button>

@@ -145,6 +145,7 @@ def downSingle(music, download_home, config):
     platform = config['platform']
     onlyShowSingerSelfSongs = config['onlyMatchSearchKey']
     musicAlbumsClassification = config['classificationMusicFile']
+    saveLyric = config['concurrency']['saveLyric']
 
     header = {}
     super_music_info = None
@@ -261,6 +262,11 @@ def downSingle(music, download_home, config):
             # {'retcode': -1901, 'code': -1901, 'subcode': -1901}
             # 外语歌曲有翻译 但是👴不需要！
             super_music_info['lrcContent'] = lyric
+
+            # 单独下载lrc歌词文件
+            if saveLyric == True:
+                with open(localLrcFile, 'w') as f:
+                    f.write(lyric)
         else:
             print(f"歌词获取失败!服务器上搜索不到此首 [{music['singer']} - {music['title']}] 歌曲歌词!")
     # 下载歌曲
