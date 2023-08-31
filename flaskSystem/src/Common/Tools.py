@@ -510,7 +510,11 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
             # 唱片公司
             label = meta['albumCollection']['company']['name']
             # GENRE 流派
-            gener = [it['name'] for it in meta['albumCollection']['basicInfo']['genres']]
+            # genres 可能为 None
+            gener = meta.get('albumCollection', {}).get('basicInfo', {}).get('genres')
+            if gener is not None:
+                for it in gener:
+                    gener.append(it['name'])
             # 专辑艺术家
             albumartist = [it['name'] for it in meta['albumCollection']['singer']['singerList']]
 
@@ -741,7 +745,7 @@ def write_metadata_information(
 
         music["TIT2"] = TIT2(encoding=3, text=title)
 
-        # 提取时间戳和歌词  
+        # 提取时间戳和歌词
         if lyric: music.setall("USLT", [USLT(encoding=Encoding.UTF8, lang='chi', format=2, type=1, text=lyric)])
 
         # 写入流派
