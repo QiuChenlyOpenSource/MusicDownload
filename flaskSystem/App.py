@@ -117,7 +117,7 @@ def executeFn(a1: str, a2: bool):
     return a1 + "a2 True" if a2 else "a2 False"
 
 
-# SocketIO 
+# SocketIO
 
 socketio = SocketIO()
 socketio.init_app(app, cors_allowed_origins='*')
@@ -136,6 +136,11 @@ def mtest_message(message):
     print(message)
     emit('my_response', {'data': message['data'], 'count': 1})
 
+@app.after_request
+def add_header(response):
+    if 'text/plain' in response.headers['Content-Type']:
+        response.headers['Content-Type'] = 'application/javascript; charset=utf-8'
+    return response
 
 
 def Start(port):
