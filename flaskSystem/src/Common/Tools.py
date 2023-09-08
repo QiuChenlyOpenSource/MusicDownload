@@ -511,9 +511,9 @@ def fulfillMusicMetaData(musicFile, metaDataInfo):
             label = meta['albumCollection']['company']['name']
             # GENRE 流派
             # genres 可能为 None
-            gener = meta.get('albumCollection', {}).get('basicInfo', {}).get('genres')
-            if gener is not None:
-                for it in gener:
+            geners = meta.get('albumCollection', {}).get('basicInfo', {}).get('genres')
+            if geners is not None:
+                for it in geners:
                     gener.append(it['name'])
             # 专辑艺术家
             albumartist = [it['name'] for it in meta['albumCollection']['singer']['singerList']]
