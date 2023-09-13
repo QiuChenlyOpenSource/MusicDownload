@@ -34,6 +34,19 @@ const userPlaylistFetch = ref<Array<NeteasePlayListSongsList>>();
 const head = ref<HTMLDivElement>();
 const paddingHeadHeight = ref(0);
 
+// import { banner, lyric } from '../Netease'
+
+// const testNetease = () => {
+//   banner({ type: 0 }).then((res) => {
+//     console.log(res)
+//   })
+//   lyric({
+//     id: '33894312',
+//   }).then((res) => {
+//     console.log(res)
+//   })
+// }
+
 const UserFunction = {
   switchLoginQRCode() {
     Api.getNeteaseQRCode().then((r) => {
@@ -128,6 +141,7 @@ onMounted(() => {
     });
   }
   paddingHeadHeight.value = head.value?.offsetHeight! + head.value?.offsetTop!;
+  // testNetease();
 });
 
 onUnmounted(() => {

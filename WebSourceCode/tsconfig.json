@@ -34,6 +34,9 @@
     "unplugin-icons/types/vue",
     "pinia-plugin-persist-uni"
   ],
+  "exclude": [
+    "src/Netease/**/*.ts",
+  ],
   "references": [
     {
       "path": "./tsconfig.node.json"

@@ -25,7 +25,7 @@ const userStore = () => {
 };
 
 const config = {
-  baseURL: process.env.NODE_ENV === 'production' ? "" : "http://192.168.31.103:8899",
+  baseURL: process.env.NODE_ENV === 'production' ? "" : "http://127.0.0.1:8899",
   // baseURL: "", // 本地测试时使用
   timeout: 15000,
   headers: {
@@ -140,11 +140,11 @@ export const Api = {
       config: config,
     });
   },
-  setBaseConfig(param: { folder: string; num: number ; lyric: boolean}) {
+  setBaseConfig(param: { folder: string; num: number; lyric: boolean }) {
     return this.post("/config", param);
   },
   getBaseConfig() {
-    return this.get<{ folder: string; num: number ; lyric: boolean}>("/getConfig");
+    return this.get<{ folder: string; num: number; lyric: boolean }>("/getConfig");
   },
   getNeteaseQRCode() {
     return this.get<{

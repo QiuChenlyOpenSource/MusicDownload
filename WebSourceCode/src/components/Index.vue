@@ -10,7 +10,9 @@
 <template>
   <div class="content">
     <div class="left-banner">
-      <div class="title">QQ音乐无损音源下载工具</div>
+      <div class="title">
+        <div>曲库流浪计划</div>
+      </div>
       <div class="functions">
         <div class="home-page" @click="router.push('/home')">
           <i-system-uicons-sun />
@@ -90,11 +92,6 @@ onMounted(() => {
   }
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-}
 
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -121,12 +118,17 @@ onMounted(() => {
     z-index: 1;
 
     .title {
-      height: 65px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 10px;
+      font-size: 20px;
       // background-color: darkorange;
       box-shadow: 0 0 10px var(--qiuchen-text);
+
+
+
     }
 
     .functions {

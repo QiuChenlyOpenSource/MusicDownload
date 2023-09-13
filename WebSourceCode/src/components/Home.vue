@@ -14,8 +14,6 @@ import { SystemStore } from "@/store/SystemStore.js";
 import { Api } from "@/utils/Http";
 import { platformListv2, MetaInfomationSupport, MetaInfomationSupportOptions, MetaInfomationSupportTypes } from "@/utils/Utils";
 import { ElDivider, ElMessage } from 'element-plus';
-import { fa } from "element-plus/es/locale";
-import { ExecException } from "child_process";
 
 const { basicStore } = SystemStore();
 
@@ -148,7 +146,11 @@ const loadLocalConfigurature = () => {
 
 <template>
   <div class="content">
-    <span class="title-name" ref="title_height">网易云曲库流浪计划</span>
+    <span class="title-name" ref="title_height">
+      <el-image class="logo" src="../static/svg/web-2191ca79.svg"></el-image>
+      <span>&nbsp;|&nbsp;</span>
+      <span>曲库流浪计划</span>
+    </span>
     <div class="safe-area" :style="{
       'padding-top': title_height_size + 'px'
     }">
@@ -156,15 +158,25 @@ const loadLocalConfigurature = () => {
         <el-card class="box-card">
           <template #header>
             <div class="card-header">
-              <span>作品介绍</span>
+              <span>简介</span>
             </div>
           </template>
+          <h2>项目介绍</h2>
           <div>本作品实现了如下功能:</div>
           <div>
             1.QQ音乐 无损音质解析下载 自动提取最高音质下载
             <span>Hi-Res -> Flac -> 320KbpsMP3 -> 128KbpsMP3</span>
           </div>
-          <div>2. 登录网易云同步歌单匹配下载,已完成。</div>
+          <div>2. 登录网易云同步歌单匹配下载,目前因为兼容性问题已停止使用。</div>
+          <div>3. 酷我音乐无损歌曲解析。</div>
+          <div>4. qq音乐元数据填充，苹果专辑元数据自动填充，歌词自动下载。</div>
+          <div>5. 完美写入MP3/FLac元数据 让emby等支持读取音乐标签的软件分类管理。</div>
+          <br>
+          <h2>致谢</h2>
+          <div>1. 本页面图标logo来自于@Vectorzhao(https://github.com/VectorZhao),感谢设计。</div>
+          <div>2. 酷我音乐直链解析算法来自于@彭狸花喵(https://github.com/helloplhm-qwq),感谢TA的逆向分析。</div>
+          <div>3. 还有很多其他的开发者向我提供了宝贵的Pull Requests,在此一并感谢！</div>
+
         </el-card>
 
         <el-card class="box-card">
@@ -278,7 +290,7 @@ const loadLocalConfigurature = () => {
     </div>
     <div class="button-bar">
       <span>音质升级计划</span>
-      <span>Design ❤️ QiuChenly @ 2023</span>
+      <span>Design ❤️ <a href="https://github.com/QiuChenlyOpenSource/QQFlacMusicDownloader">秋城落叶开源项目</a> @ 2023</span>
     </div>
   </div>
 </template>
@@ -329,6 +341,11 @@ const loadLocalConfigurature = () => {
     justify-content: center;
     border-bottom: solid 1px rgba(white, 0.1);
     z-index: 1;
+
+    .logo {
+      height: 40px;
+      will-change: filter;
+    }
   }
 
   .safe-area {
