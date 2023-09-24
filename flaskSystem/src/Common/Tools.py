@@ -265,7 +265,7 @@ def downSingle(music, download_home, config):
 
             # 单独下载lrc歌词文件
             if saveLyric == True:
-                with open(localLrcFile, 'w') as f:
+                with open(localLrcFile, 'w', encoding='utf-8') as f:
                     f.write(lyric)
         else:
             print(f"歌词获取失败!服务器上搜索不到此首 [{music['singer']} - {music['title']}] 歌曲歌词!")
