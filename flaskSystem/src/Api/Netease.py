@@ -272,7 +272,8 @@ class Netease(BaseApi):
         return False
 
     def getMusicUrl(self, id=''):
-        u = f'https://csm.sayqz.com/api/?type=apiSongUrlV1&level=lossless&id={id}&'
+        u = f'https://csm.sayqz.com/api/?type=apiSongUrlV1&level=hires&id={id}'
+        #音质 standard => 标准,higher => 较高, exhigh=>极高, lossless=>无损, hires=>Hi-Res
         # {
         # 	"url": "http:\/\/m704.music.126.net\/20230305234939\/ccfe8832df4e3431dbe25dfea1118f1e\/jdymusic\/obj\/wo3DlMOGwrbDjj7DisKw\/22975550396\/2dbf\/d87f\/e6f2\/11dac549d861ba74f1d599d2f4f45cea.flac?authSecret=00000186b25ff97815c80aaba23719fb",
         # 	"size": 3278433,
