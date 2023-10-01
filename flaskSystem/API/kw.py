@@ -18,7 +18,7 @@ myFreeMP3 = MyFreeMP3()
 
 @app.get("/kw/search/<searchKey>/<page>/<size>/<rid>/<encId>")
 def kwsearch(searchKey: str, page=1, size=100,rid='', encId=''):
-    lst = kw.search_kw_h5(searchKey, int(page), int(size),rid,encId)  # Mac端搜索接口
+    lst = kw.search_kw_mac(searchKey, int(page), int(size))  # Mac端搜索接口
     page = lst['page']
     return {
         'code': 200,
