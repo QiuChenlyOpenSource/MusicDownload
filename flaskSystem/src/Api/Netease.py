@@ -272,18 +272,18 @@ class Netease(BaseApi):
         return False
 
     def getMusicUrl(self, id=''):
-        u = 'http://music.fy6b.com/index/mp3orflac'
-        d = f'type=netease&id={id}&option=flac'
+        u = f'https://csm.sayqz.com/api/?type=apiSongUrlV1&level=lossless&id={id}&'
         # {
         # 	"url": "http:\/\/m704.music.126.net\/20230305234939\/ccfe8832df4e3431dbe25dfea1118f1e\/jdymusic\/obj\/wo3DlMOGwrbDjj7DisKw\/22975550396\/2dbf\/d87f\/e6f2\/11dac549d861ba74f1d599d2f4f45cea.flac?authSecret=00000186b25ff97815c80aaba23719fb",
         # 	"size": 3278433,
         # 	"br": 512.575
         # }
-        r = self.httpw(u, 1, d.encode('utf-8'), {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 8.1.0; MI 5s Build/OPM1.171019.018)"
+        r = self.httpw(u, 0, head={
+            "Host": "csm.sayqz.com",
+            "accept-encoding": "gaip",
+            "user-Agent": "okhttp/${project.version}"
         })
-        r = r.json()
+        r = r.json()['data'][0]
         return r
 
     def searchMusicByTrd(self, searchKey="周杰伦", pageNum=1, pageSize=100):
