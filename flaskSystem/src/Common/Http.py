@@ -23,7 +23,7 @@ class HttpRequest:
                 url: str,
                 method: int = 0,
                 data: bytes = r'',
-                header: dict[str, str] = {},
+                header: dict[str, str, str] = {},
                 params: dict[str, str] = {}
                 ) -> requests.Response:
         """

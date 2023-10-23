@@ -196,7 +196,7 @@ def downSingle(music, download_home, config):
     elif platform == 'wyy':
         link: str = handleWyy(music['mid'])
         if link is not None:
-            music['extra'] = 'flac' if link.find(".flac?") != -1 else 'mp3'
+            music['type'] = 'flac' if link.find(".flac") != -1 else 'mp3'
         music['singer'] = music['author_simple']
         music["album"] = music['album']
         musicFileInfo = f"{music['author_simple']} - {music['title']}"
