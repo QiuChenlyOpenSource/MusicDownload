@@ -74,7 +74,7 @@ class KwApi(BaseApi):
               'openudid=&' \
               'uuid=&prod=kwplayer_mc_1.7.0&corp=kuwo&source=kwplayer_mc_1.7.0&' \
               'uid=&ver=kwplayer_mc_1.7.0&loginid=0&client=kt&cluster=0&strategy=2012&ver=mbox&' \
-              f'show_copyright_off=1&encoding=utf8&rformat=json&mobi=1&vipver=1&pn={page_num}&rn={page_size}&' \
+              f'show_copyright_off=1&encoding=utf8&rformat=json&mobi=1&vipver=1&pn={page_num-1}&rn={page_size}&' \
               f'all={searchKey}&ft=music'
         res = self.getUrl(url)
         res = res.json()
