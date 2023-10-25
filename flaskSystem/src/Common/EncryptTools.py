@@ -404,10 +404,11 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     osVersion = '13' #从sdkVersion修改为androidVersion
     time = str(int(tm.time()))
     # f389249d91bd845c9b817db984054cfb 1678713735 6562653262383463363633646364306534333663
-    lowerCase = hashMd5("6d849adb2f3e00d413fe48efbb18d9bb" + time + "6562653262383463363633646364306534333668").lower() # 更新参数
+    # lowerCase = hashMd5("6d849adb2f3e00d413fe48efbb18d9bb" + time + "6562653262383463363633646364306534333668").lower() # 更新参数
+    lowerCase = hashMd5("d86b856be4a7ea7a5bc9b6c4eed46f4e" + time + "6562653262383463363633646364306534333668").lower() # app的MD5改变了
 
     s6 = "{\\\"method\\\":\\\"GetMusicUrl\\\",\\\"platform\\\":\\\"" + platform + "\\\",\\\"t1\\\":\\\"" + t1_MusicID + "\\\",\\\"t2\\\":\\\"" + t2 + "\\\"}"
-    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.2\\\",\\\"vercode\\\":\\\"4120\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}" # 更新app版本
+    s7 = "{\\\"uid\\\":\\\"\\\",\\\"token\\\":\\\"\\\",\\\"deviceid\\\":\\\"84ac82836212e869dbeea73f09ebe52b\\\",\\\"appVersion\\\":\\\"4.1.4\\\",\\\"vercode\\\":\\\"4140\\\",\\\"device\\\":\\\"" + device + "\\\",\\\"osVersion\\\":\\\"" + osVersion + "\\\"}" # 更新app版本
     s8 = "{\n\t\"text_1\":\t\"" + s6 + "\",\n\t\"text_2\":\t\"" + s7 + "\",\n\t\"sign_1\":\t\"" + lowerCase + "\",\n\t\"time\":\t\"" + time + "\",\n\t\"sign_2\":\t\"" + hashMd5(
         s6.replace("\\", "") + s7.replace("\\", "") + lowerCase + time + "NDRjZGIzNzliNzEe").lower() + "\"\n}" # 更新param
 
@@ -424,6 +425,7 @@ def testGetLink(qqmusicID='003cI52o4daJJL', platform='qq', quality='sq'):
     s8 = binascii.hexlify(s8.encode('utf-8')).decode('utf-8').upper().encode('utf-8')
     s8 = zlib.compress(s8)
     url = [
+        "http://app.kzti.top/client/cgi-bin/api.fcg", # 源app更新地址
         "http://gcsp.kzti.top:1030/client/cgi-bin/api.fcg", # 源app已更新地址
         "http://119.91.134.171:1030/client/cgi-bin/api.fcg",
         "http://106.52.68.150:1030/client/cgi-bin/api.fcg"  # 资源大师接口
