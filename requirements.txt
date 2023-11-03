@@ -1,0 +1,9 @@
+Flask==2.2.3
+Flask-Cors==3.0.10
+mutagen==1.46.0
+Pillow==10.0.0
+requests==2.28.2
+pycryptodome==3.17
+Werkzeug==2.2.3
+zhconv==1.4.3
+Flask-SocketIO==5.3.5
